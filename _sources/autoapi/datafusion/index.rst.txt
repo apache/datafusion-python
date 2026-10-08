@@ -57,6 +57,7 @@ Submodules
    /autoapi/datafusion/dataframe/index
    /autoapi/datafusion/dataframe_formatter/index
    /autoapi/datafusion/expr/index
+   /autoapi/datafusion/extensions/index
    /autoapi/datafusion/functions/index
    /autoapi/datafusion/input/index
    /autoapi/datafusion/io/index
@@ -97,6 +98,7 @@ Classes
    datafusion.MetricsSet
    datafusion.ParquetColumnOptions
    datafusion.ParquetWriterOptions
+   datafusion.PhysicalPartitioning
    datafusion.RecordBatch
    datafusion.RecordBatchStream
    datafusion.RuntimeEnvBuilder
@@ -427,7 +429,7 @@ Package Contents
 
    .. py:method:: children() -> list[ExecutionPlan]
 
-      Get a list of children `ExecutionPlan` that act as inputs to this plan.
+      Get a list of children ``ExecutionPlan`` that act as inputs to this plan.
 
       The returned list will be empty for leaf nodes such as scans, will contain a
       single value for unary nodes, or two values for binary nodes (such as joins).
@@ -479,9 +481,16 @@ Package Contents
 
       Create an ExecutionPlan from serialized protobuf bytes.
 
-      Decoding routes through the session's installed
-      `PhysicalExtensionCodec`. Tables created in memory from record
-      batches are currently not supported.
+      Decoding routes through the codecs installed on ``ctx`` with
+      :py:meth:`~datafusion.SessionContext.with_physical_extension_codec`.
+
+      Unlike :py:meth:`datafusion.Expr.from_bytes`, ``ctx`` is required and
+      positional, and there is no fallback to a worker or global context.
+      ``ctx`` need share nothing with the session that encoded the plan: a
+      scan over a table registered from record batches decodes here, because
+      the batches travel inside the encoded scan.
+
+      .. seealso:: :py:meth:`to_bytes`, :py:meth:`LogicalPlan.from_bytes`.
 
 
 
@@ -508,9 +517,20 @@ Package Contents
 
       Convert an ExecutionPlan into serialized protobuf bytes.
 
-      When ``ctx`` is supplied, encoding routes through the session's
-      installed `PhysicalExtensionCodec`. Tables created in memory
-      from record batches are currently not supported.
+      When ``ctx`` is supplied, encoding routes through the codecs
+      installed on it with
+      :py:meth:`~datafusion.SessionContext.with_physical_extension_codec`.
+
+      Unlike :py:meth:`LogicalPlan.to_bytes`, a plan reading a table
+      registered from record batches does round-trip: the batches travel
+      inside the encoded scan.
+
+      Round-tripping through this method and :py:meth:`from_bytes` is how
+      an extension library checks that its own codec claimed its nodes,
+      rather than a codec installed earlier in the chain — see
+      :ref:`extension_codec_order`.
+
+      .. seealso:: :py:meth:`from_bytes`, :py:meth:`LogicalPlan.to_bytes`.
 
 
 
@@ -523,11 +543,53 @@ Package Contents
    .. py:attribute:: _raw_plan
 
 
+   .. py:property:: output_partitioning
+      :type: PhysicalPartitioning
+
+
+      Returns how this plan's output rows are spread across its partitions.
+
+      Where :py:attr:`partition_count` gives only the number of partitions,
+      this also reports the scheme, so a caller executing partitions
+      separately can tell whether they are hash-distributed on known keys or
+      merely counted. A plan does not necessarily partition the way it was
+      asked to; see :ref:`checking_partitioning`.
+
+      .. rubric:: Examples
+
+      >>> import pyarrow as pa
+      >>> from datafusion import SessionConfig, SessionContext
+      >>> ctx = SessionContext(SessionConfig().with_target_partitions(4))
+      >>> ctx.register_record_batches("t", [
+      ...     [pa.record_batch({"a": [1, 2, 3]})],
+      ...     [pa.record_batch({"a": [4, 5, 6]})],
+      ... ])
+      >>> ctx.sql("select a from t").execution_plan().output_partitioning
+      UnknownPartitioning(2)
+
+      A group-by redistributes rows, so the plan reports the keys:
+
+      >>> grouped = ctx.sql("select a, count(*) from t group by a")
+      >>> partitioning = grouped.execution_plan().output_partitioning
+      >>> partitioning.scheme
+      'Hash'
+      >>> partitioning.partition_count
+      4
+
+
    .. py:property:: partition_count
       :type: int
 
 
       Returns the number of partitions in the physical plan.
+
+      .. rubric:: Examples
+
+      >>> from datafusion import SessionContext
+      >>> ctx = SessionContext()
+      >>> df = ctx.from_pydict({"a": [1, 2, 3]})
+      >>> df.execution_plan().partition_count
+      1
 
 
 .. py:class:: ExplainFormat
@@ -709,6 +771,13 @@ Package Contents
           portable across minor versions. See :meth:`to_bytes` for
           details on what travels by value vs. by reference.
 
+      The encoding side honors a driver-side sender context installed
+      via :func:`datafusion.ipc.set_sender_ctx` — that is how
+      :meth:`SessionContext.with_python_udf_inlining` propagates
+      through ``pickle.dumps``. The sender context is read by
+      ``__reduce__``, so :func:`copy.copy` and :func:`copy.deepcopy`
+      — which also go through ``__reduce__`` — pick it up too.
+
       .. rubric:: Examples
 
       >>> import pickle
@@ -716,13 +785,6 @@ Package Contents
       >>> e = col("a") * lit(2)
       >>> pickle.loads(pickle.dumps(e)).canonical_name()
       'a * Int64(2)'
-
-      The encoding side honors a driver-side sender context installed
-      via :func:`datafusion.ipc.set_sender_ctx` — that is how
-      :meth:`SessionContext.with_python_udf_inlining` propagates
-      through ``pickle.dumps``. The sender context is read by
-      ``__reduce__``, so :func:`copy.copy` and :func:`copy.deepcopy`
-      — which also go through ``__reduce__`` — pick it up too.
 
 
 
@@ -999,8 +1061,9 @@ Package Contents
       Only evaluate distinct values for an aggregate function.
 
       This function will create an :py:class:`ExprFuncBuilder` that can be used to
-      set parameters for either window or aggregate functions. If used on any other
-      type of expression, an error will be generated when ``build()`` is called.
+      set parameters for either window or aggregate functions. It raises on a window
+      function unless that is an aggregate used as one. If used on any other type of
+      expression, an error will be generated when ``build()`` is called.
 
 
 
@@ -1039,8 +1102,9 @@ Package Contents
       Filter an aggregate function.
 
       This function will create an :py:class:`ExprFuncBuilder` that can be used to
-      set parameters for either window or aggregate functions. If used on any other
-      type of expression, an error will be generated when ``build()`` is called.
+      set parameters for either window or aggregate functions. It raises on a window
+      function unless that is an aggregate used as one. If used on any other type of
+      expression, an error will be generated when ``build()`` is called.
 
 
 
@@ -1072,6 +1136,13 @@ Package Contents
       context is installed, the global :class:`SessionContext` is used
       (sufficient for built-ins and Python UDFs, plus any UDFs
       registered on the global context).
+
+      Note that the global context carries no extension codecs, so
+      falling back to it cannot decode a payload written by one. A
+      worker that must decode extension-codec payloads has to install a
+      context carrying those codecs — see
+      :func:`datafusion.ipc.set_worker_ctx` and
+      :meth:`SessionContext.with_extensions`.
 
       .. warning:: Security
           Decoding may invoke ``cloudpickle.loads`` on bytes embedded
@@ -1109,6 +1180,12 @@ Package Contents
 
       Converts the first letter of each word in ``string`` to uppercase and the
       remaining characters to lowercase.
+
+
+
+   .. py:method:: is_nan() -> Expr
+
+      Returns true if a given number is +NaN or -NaN otherwise returns false.
 
 
 
@@ -1259,11 +1336,18 @@ Package Contents
 
    .. py:method:: over(window: Window) -> Expr
 
-      Turn an aggregate function into a window function.
+      Evaluate an aggregate or window function over a window.
 
-      This function turns any aggregate function into a window function. With the
+      On an aggregate function this turns it into a window function. With the
       exception of ``partition_by``, how each of the parameters is used is determined
       by the underlying aggregate function.
+
+      On an aggregate, the ``null_treatment``, ``filter``, and ``distinct`` options
+      it was built with are kept, and an ``order_by`` raises; see
+      :ref:`aggregate_over_options`.
+
+      On a window function that already has a ``partition_by``, ``order_by``, or
+      ``window_frame``, this raises; see :ref:`window_function_chaining`.
 
       :param window: Window definition
 
@@ -1274,8 +1358,10 @@ Package Contents
       Set the partitioning for a window function.
 
       This function will create an :py:class:`ExprFuncBuilder` that can be used to
-      set parameters for either window or aggregate functions. If used on any other
-      type of expression, an error will be generated when ``build()`` is called.
+      set parameters for either window or aggregate functions. It raises on an
+      aggregate function that has not been turned into a window function with
+      :py:meth:`over`. If used on any other type of expression, an error will be
+      generated when ``build()`` is called.
 
 
 
@@ -1384,7 +1470,7 @@ Package Contents
 
 
 
-   .. py:method:: sort(ascending: bool = True, nulls_first: bool = True) -> SortExpr
+   .. py:method:: sort(ascending: bool = True, nulls_first: bool = False) -> SortExpr
 
       Creates a sort :py:class:`Expr` from an existing :py:class:`Expr`.
 
@@ -1569,11 +1655,13 @@ Package Contents
 
    .. py:method:: window_frame(window_frame: WindowFrame) -> ExprFuncBuilder
 
-      Set the frame fora  window function.
+      Set the frame for a window function.
 
       This function will create an :py:class:`ExprFuncBuilder` that can be used to
-      set parameters for either window or aggregate functions. If used on any other
-      type of expression, an error will be generated when ``build()`` is called.
+      set parameters for either window or aggregate functions. It raises on an
+      aggregate function that has not been turned into a window function with
+      :py:meth:`over`. If used on any other type of expression, an error will be
+      generated when ``build()`` is called.
 
 
 
@@ -1650,7 +1738,7 @@ Package Contents
    This constructor should not be called by the end user.
 
 
-   .. py:method:: __eq__(other: LogicalPlan) -> bool
+   .. py:method:: __eq__(other: object) -> bool
 
       Test equality.
 
@@ -1672,9 +1760,9 @@ Package Contents
 
       Print the graph visualization of the logical plan.
 
-      Returns a `format`able structure that produces lines meant for graphical display
-      using the `DOT` language. This format can be visualized using software from
-      [`graphviz`](https://graphviz.org/)
+      Returns a formattable structure that produces lines meant for graphical
+      display using the ``DOT`` language. This format can be visualized using
+      software from `graphviz <https://graphviz.org/>`_.
 
 
 
@@ -1696,9 +1784,18 @@ Package Contents
 
       Create a LogicalPlan from serialized protobuf bytes.
 
-      Decoding routes through the session's installed
-      `LogicalExtensionCodec`. Tables created in memory from record
-      batches are currently not supported.
+      Decoding routes through the codecs installed on ``ctx`` with
+      :py:meth:`~datafusion.SessionContext.with_logical_extension_codec`.
+      Tables created in memory from record batches are currently not
+      supported.
+
+      Unlike :py:meth:`datafusion.Expr.from_bytes`, ``ctx`` is required and
+      positional, and there is no fallback to a worker or global context.
+
+      .. seealso::
+
+         :py:meth:`to_bytes`, :py:meth:`ExecutionPlan.from_bytes`,
+         :py:meth:`datafusion.Expr.from_bytes`.
 
 
 
@@ -1720,12 +1817,17 @@ Package Contents
 
       Convert a LogicalPlan to serialized protobuf bytes.
 
-      When ``ctx`` is supplied, encoding routes through the session's
-      installed `LogicalExtensionCodec` so user FFI codecs (registered
-      via :py:meth:`SessionContext.with_logical_extension_codec`) see
-      the encode path. With ``ctx=None`` a default codec is used.
-      Tables created in memory from record batches are currently not
-      supported.
+      When ``ctx`` is supplied, encoding routes through the codecs
+      installed on it with
+      :py:meth:`~datafusion.SessionContext.with_logical_extension_codec`,
+      so extension codecs see the encode path. With ``ctx=None`` a
+      default codec is used. Tables created in memory from record
+      batches are currently not supported.
+
+      .. seealso::
+
+         :py:meth:`from_bytes`, :py:meth:`ExecutionPlan.to_bytes`,
+         :py:meth:`datafusion.Expr.to_bytes`.
 
 
 
@@ -2131,6 +2233,140 @@ Package Contents
 
 
 
+.. py:class:: PhysicalPartitioning(partitioning: datafusion._internal.PhysicalPartitioning)
+
+   How a physical plan's output rows are spread across its partitions.
+
+   Returned by :py:attr:`ExecutionPlan.output_partitioning`. This is the
+   partitioning a built plan *has*. Distinct from
+   :py:class:`datafusion.expr.Partitioning`, the *logical* partitioning a
+   ``Repartition`` node records and hands back from
+   ``partitioning_scheme()`` — a request, which the plan need not honour. See
+   :ref:`checking_partitioning`.
+
+   This constructor should not be called by the end user.
+
+
+   .. py:method:: __eq__(other: object) -> bool
+
+      Compare two partitionings by scheme, count and hash expressions.
+
+      Equality is structural, and does not mirror DataFusion's own
+      comparison of the underlying type, under which two
+      ``UnknownPartitioning`` values of the same width are unequal.
+
+      .. rubric:: Examples
+
+      >>> from datafusion import SessionContext
+      >>> ctx = SessionContext()
+      >>> a = ctx.from_pydict({"a": [1, 2, 3]}).execution_plan()
+      >>> b = ctx.from_pydict({"b": [4, 5, 6]}).execution_plan()
+      >>> a.output_partitioning == b.output_partitioning
+      True
+      >>> a.output_partitioning == "UnknownPartitioning(1)"
+      False
+
+
+
+   .. py:method:: __hash__() -> int
+
+      Hash the partitioning, consistently with :py:meth:`__eq__`.
+
+      .. rubric:: Examples
+
+      >>> from datafusion import SessionContext
+      >>> ctx = SessionContext()
+      >>> a = ctx.from_pydict({"a": [1, 2, 3]}).execution_plan()
+      >>> b = ctx.from_pydict({"b": [4, 5, 6]}).execution_plan()
+      >>> len({a.output_partitioning, b.output_partitioning})
+      1
+
+
+
+   .. py:method:: __repr__() -> str
+
+      Print a string representation of the partitioning.
+
+      .. rubric:: Examples
+
+      >>> from datafusion import SessionContext
+      >>> ctx = SessionContext()
+      >>> df = ctx.from_pydict({"a": [1, 2, 3]})
+      >>> repr(df.execution_plan().output_partitioning)
+      'UnknownPartitioning(1)'
+
+
+
+   .. py:method:: _key() -> tuple[str, int, tuple[str, Ellipsis] | None]
+
+
+   .. py:attribute:: _raw_partitioning
+
+
+   .. py:property:: hash_expressions
+      :type: list[str] | None
+
+
+      The expressions rows are hashed on, or ``None`` for other schemes.
+
+      Physical expressions have no Python representation, so these are
+      returned in their displayed form. ``None`` covers ``"Range"`` as well,
+      whose ordering and split points this class does not expose.
+
+      .. rubric:: Examples
+
+      >>> import pyarrow as pa
+      >>> from datafusion import SessionConfig, SessionContext
+      >>> ctx = SessionContext(SessionConfig().with_target_partitions(4))
+      >>> ctx.register_record_batches("t", [
+      ...     [pa.record_batch({"a": [1, 2, 3]})],
+      ...     [pa.record_batch({"a": [4, 5, 6]})],
+      ... ])
+      >>> scan = ctx.sql("select a from t").execution_plan()
+      >>> scan.output_partitioning.hash_expressions is None
+      True
+      >>> grouped = ctx.sql("select a, count(*) from t group by a")
+      >>> grouped.execution_plan().output_partitioning.hash_expressions
+      ['a@0']
+
+
+   .. py:property:: partition_count
+      :type: int
+
+
+      The number of partitions.
+
+      .. rubric:: Examples
+
+      >>> from datafusion import SessionContext
+      >>> ctx = SessionContext()
+      >>> df = ctx.from_pydict({"a": [1, 2, 3]})
+      >>> df.execution_plan().output_partitioning.partition_count
+      1
+
+
+   .. py:property:: scheme
+      :type: Literal['RoundRobinBatch', 'Hash', 'Range', 'UnknownPartitioning']
+
+
+      Which partitioning scheme this is.
+
+      ``"UnknownPartitioning"`` means the plan knows how many partitions it
+      has but nothing about how rows are distributed between them, which is
+      the usual case for a file scan. ``"RoundRobinBatch"`` and ``"Hash"``
+      come from a repartition the optimizer inserted. ``"Range"`` only
+      appears on a plan this package did not build; see
+      :ref:`checking_partitioning`.
+
+      .. rubric:: Examples
+
+      >>> from datafusion import SessionContext
+      >>> ctx = SessionContext()
+      >>> df = ctx.from_pydict({"a": [1, 2, 3]})
+      >>> df.execution_plan().output_partitioning.scheme
+      'UnknownPartitioning'
+
+
 .. py:class:: RecordBatch(record_batch: datafusion._internal.RecordBatch)
 
    This class is essentially a wrapper for :py:class:`pa.RecordBatch`.
@@ -2383,18 +2619,60 @@ Package Contents
 
    Create a new :py:class:`SessionConfig` with the given configuration options.
 
-   :param config_options: Configuration options.
+   Each entry is applied as though passed to :py:meth:`set`, so the same
+   keys are rejected. See :ref:`configuration`.
+
+   :param config_options: Options to apply, keyed by fully qualified name.
+
+   :raises ValueError: If a key names no known option, or a value does not
+       parse as that option's declared type. Which of several bad
+       entries is reported is not defined.
+
+   Example usage:
+
+   >>> from datafusion import SessionConfig, SessionContext
+   >>> ctx = SessionContext(SessionConfig())
+   >>> config = SessionConfig(
+   ...     config_options={"datafusion.execution.batch_size": "1024"}
+   ... )
+   >>> ctx = SessionContext(config.with_information_schema(True))
+   >>> ctx.sql(
+   ...     "select value from information_schema.df_settings"
+   ...     " where name = 'datafusion.execution.batch_size'"
+   ... ).collect()[0]["value"][0]
+   <pyarrow.StringScalar: '1024'>
 
 
    .. py:method:: set(key: str, value: str) -> SessionConfig
 
-      Set a configuration option.
+      Set a configuration option by its fully qualified key.
 
-      Args:
-      key: Option key.
-      value: Option value.
+      Not every key that ``information_schema.df_settings`` lists can be set
+      here: the ``datafusion.runtime.*`` entries come from the runtime
+      environment rather than from the session config. See
+      :ref:`configuration`.
 
-      :returns: A new :py:class:`SessionConfig` object with the updated setting.
+      :param key: Option key including its namespace, such as
+                  ``datafusion.execution.batch_size``.
+      :param value: Option value as a string, parsed according to the type the
+                    option declares.
+
+      :returns: This :py:class:`SessionConfig`, modified in place, so that calls
+                chain.
+
+      :raises ValueError: If ``key`` names no known option, or if ``value`` does
+          not parse as that option's declared type.
+
+      Example usage:
+
+      >>> from datafusion import SessionConfig, SessionContext
+      >>> config = SessionConfig().set("datafusion.execution.batch_size", "1024")
+      >>> ctx = SessionContext(config.with_information_schema(True))
+      >>> ctx.sql(
+      ...     "select value from information_schema.df_settings"
+      ...     " where name = 'datafusion.execution.batch_size'"
+      ... ).collect()[0]["value"][0]
+      <pyarrow.StringScalar: '1024'>
 
 
 

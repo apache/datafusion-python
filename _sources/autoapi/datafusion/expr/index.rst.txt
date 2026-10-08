@@ -341,6 +341,13 @@ Module Contents
           portable across minor versions. See :meth:`to_bytes` for
           details on what travels by value vs. by reference.
 
+      The encoding side honors a driver-side sender context installed
+      via :func:`datafusion.ipc.set_sender_ctx` — that is how
+      :meth:`SessionContext.with_python_udf_inlining` propagates
+      through ``pickle.dumps``. The sender context is read by
+      ``__reduce__``, so :func:`copy.copy` and :func:`copy.deepcopy`
+      — which also go through ``__reduce__`` — pick it up too.
+
       .. rubric:: Examples
 
       >>> import pickle
@@ -348,13 +355,6 @@ Module Contents
       >>> e = col("a") * lit(2)
       >>> pickle.loads(pickle.dumps(e)).canonical_name()
       'a * Int64(2)'
-
-      The encoding side honors a driver-side sender context installed
-      via :func:`datafusion.ipc.set_sender_ctx` — that is how
-      :meth:`SessionContext.with_python_udf_inlining` propagates
-      through ``pickle.dumps``. The sender context is read by
-      ``__reduce__``, so :func:`copy.copy` and :func:`copy.deepcopy`
-      — which also go through ``__reduce__`` — pick it up too.
 
 
 
@@ -631,8 +631,9 @@ Module Contents
       Only evaluate distinct values for an aggregate function.
 
       This function will create an :py:class:`ExprFuncBuilder` that can be used to
-      set parameters for either window or aggregate functions. If used on any other
-      type of expression, an error will be generated when ``build()`` is called.
+      set parameters for either window or aggregate functions. It raises on a window
+      function unless that is an aggregate used as one. If used on any other type of
+      expression, an error will be generated when ``build()`` is called.
 
 
 
@@ -671,8 +672,9 @@ Module Contents
       Filter an aggregate function.
 
       This function will create an :py:class:`ExprFuncBuilder` that can be used to
-      set parameters for either window or aggregate functions. If used on any other
-      type of expression, an error will be generated when ``build()`` is called.
+      set parameters for either window or aggregate functions. It raises on a window
+      function unless that is an aggregate used as one. If used on any other type of
+      expression, an error will be generated when ``build()`` is called.
 
 
 
@@ -704,6 +706,13 @@ Module Contents
       context is installed, the global :class:`SessionContext` is used
       (sufficient for built-ins and Python UDFs, plus any UDFs
       registered on the global context).
+
+      Note that the global context carries no extension codecs, so
+      falling back to it cannot decode a payload written by one. A
+      worker that must decode extension-codec payloads has to install a
+      context carrying those codecs — see
+      :func:`datafusion.ipc.set_worker_ctx` and
+      :meth:`SessionContext.with_extensions`.
 
       .. warning:: Security
           Decoding may invoke ``cloudpickle.loads`` on bytes embedded
@@ -741,6 +750,12 @@ Module Contents
 
       Converts the first letter of each word in ``string`` to uppercase and the
       remaining characters to lowercase.
+
+
+
+   .. py:method:: is_nan() -> Expr
+
+      Returns true if a given number is +NaN or -NaN otherwise returns false.
 
 
 
@@ -891,11 +906,18 @@ Module Contents
 
    .. py:method:: over(window: Window) -> Expr
 
-      Turn an aggregate function into a window function.
+      Evaluate an aggregate or window function over a window.
 
-      This function turns any aggregate function into a window function. With the
+      On an aggregate function this turns it into a window function. With the
       exception of ``partition_by``, how each of the parameters is used is determined
       by the underlying aggregate function.
+
+      On an aggregate, the ``null_treatment``, ``filter``, and ``distinct`` options
+      it was built with are kept, and an ``order_by`` raises; see
+      :ref:`aggregate_over_options`.
+
+      On a window function that already has a ``partition_by``, ``order_by``, or
+      ``window_frame``, this raises; see :ref:`window_function_chaining`.
 
       :param window: Window definition
 
@@ -906,8 +928,10 @@ Module Contents
       Set the partitioning for a window function.
 
       This function will create an :py:class:`ExprFuncBuilder` that can be used to
-      set parameters for either window or aggregate functions. If used on any other
-      type of expression, an error will be generated when ``build()`` is called.
+      set parameters for either window or aggregate functions. It raises on an
+      aggregate function that has not been turned into a window function with
+      :py:meth:`over`. If used on any other type of expression, an error will be
+      generated when ``build()`` is called.
 
 
 
@@ -1016,7 +1040,7 @@ Module Contents
 
 
 
-   .. py:method:: sort(ascending: bool = True, nulls_first: bool = True) -> SortExpr
+   .. py:method:: sort(ascending: bool = True, nulls_first: bool = False) -> SortExpr
 
       Creates a sort :py:class:`Expr` from an existing :py:class:`Expr`.
 
@@ -1201,11 +1225,13 @@ Module Contents
 
    .. py:method:: window_frame(window_frame: WindowFrame) -> ExprFuncBuilder
 
-      Set the frame fora  window function.
+      Set the frame for a window function.
 
       This function will create an :py:class:`ExprFuncBuilder` that can be used to
-      set parameters for either window or aggregate functions. If used on any other
-      type of expression, an error will be generated when ``build()`` is called.
+      set parameters for either window or aggregate functions. It raises on an
+      aggregate function that has not been turned into a window function with
+      :py:meth:`over`. If used on any other type of expression, an error will be
+      generated when ``build()`` is called.
 
 
 

@@ -142,13 +142,13 @@ Module Contents
 
       Wrap an already-constructed internal ``AggregateUDF`` handle.
 
-      Used by :py:meth:`SessionContext.udaf` to surface a function looked
-      up from the session's function registry without re-running
-      :py:meth:`__init__`.
+      Used by :py:meth:`SessionContext.udaf` and :py:meth:`from_pycapsule`
+      to wrap a handle from the session's function registry or an FFI
+      capsule without re-running :py:meth:`__init__`.
 
 
 
-   .. py:method:: from_pycapsule(func: AggregateUDFExportable | _typeshed.CapsuleType) -> AggregateUDF
+   .. py:method:: from_pycapsule(func: AggregateUDFExportable | types.CapsuleType) -> AggregateUDF
       :staticmethod:
 
 
@@ -162,7 +162,7 @@ Module Contents
    .. py:method:: udaf(input_types: pyarrow.DataType | list[pyarrow.DataType], return_type: pyarrow.DataType, state_type: list[pyarrow.DataType], volatility: Volatility | str, name: str | None = None) -> collections.abc.Callable[Ellipsis, AggregateUDF]
                   udaf(accum: collections.abc.Callable[[], Accumulator], input_types: pyarrow.DataType | list[pyarrow.DataType], return_type: pyarrow.DataType, state_type: list[pyarrow.DataType], volatility: Volatility | str, name: str | None = None) -> AggregateUDF
                   udaf(accum: AggregateUDFExportable) -> AggregateUDF
-                  udaf(accum: _typeshed.CapsuleType) -> AggregateUDF
+                  udaf(accum: types.CapsuleType) -> AggregateUDF
       :staticmethod:
 
 
@@ -292,8 +292,56 @@ Module Contents
 
    Type hint for objects exposing ``__datafusion_logical_extension_codec__``.
 
+   Implement the codec itself exactly as you would for a session that installs
+   only yours. A session may hold several codecs, but each payload records the
+   codec that wrote it and is only ever handed back to that codec, so there is
+   no need to recognise or reject another library's payloads.
 
-   .. py:method:: __datafusion_logical_extension_codec__() -> object
+   A serialized plan records which codec wrote each payload, as a short id
+   taken from your class's module and qualified name. An optional
+   ``__datafusion_codec_id__`` attribute pins that id instead. It is not part
+   of this protocol and is rarely needed: declare it when renaming your class
+   must not stop older plans from decoding, or when one library installs two
+   instances that own disjoint slices of the wire format.
+
+   :param session: A handle on the session this codec is being installed on. Take
+                   the task context provider from it rather than building a session of
+                   your own, so the decode callbacks resolve names against the session
+                   that runs the query.
+
+                   **Duck-type it; do not check its type.** This argument is the
+                   reference for every capsule getter in the protocol, and across them
+                   it is not always a session at all: the provider and catalog getters
+                   receive the host's logical codec as a bare ``PyCapsule``. Even when
+                   it *is* a session it is the PyO3 context from
+                   ``datafusion._internal``, not the
+                   :py:class:`~datafusion.context.SessionContext` wrapper, so it
+                   exposes every capsule getter and ``__datafusion_codec_id__`` —
+                   everything the protocol asks of it — but
+                   ``isinstance(session, SessionContext)`` is ``False`` even though its
+                   ``repr`` reads ``datafusion.SessionContext``. Pass it to
+                   ``ffi_logical_codec_from_pycapsule``, which handles both.
+
+                   The two bundle hooks are the exception:
+                   :py:class:`~datafusion.extensions.SessionComponentsExportable` and
+                   :py:class:`~datafusion.extensions.SessionPlannerExportable` are
+                   dispatched from Python and receive the wrapper. See
+                   :ref:`extension_getter_argument`.
+
+   :returns: A ``datafusion_logical_extension_codec`` PyCapsule.
+
+   .. rubric:: Examples
+
+   A :py:class:`~datafusion.context.SessionContext` satisfies this
+   protocol, which is how you obtain a real capsule to test against:
+
+   >>> from datafusion import SessionContext
+   >>> ctx = SessionContext()
+   >>> type(ctx.__datafusion_logical_extension_codec__(ctx)).__name__
+   'PyCapsule'
+
+
+   .. py:method:: __datafusion_logical_extension_codec__(session: Any) -> object
 
 
 .. py:class:: PhysicalExtensionCodecExportable
@@ -303,11 +351,16 @@ Module Contents
 
    Type hint for objects exposing ``__datafusion_physical_extension_codec__``.
 
+   See :py:class:`LogicalExtensionCodecExportable` for ``session``, for why a
+   codec need not recognise other libraries' payloads, and for
+   ``__datafusion_codec_id__``.
 
-   .. py:method:: __datafusion_physical_extension_codec__() -> object
+
+   .. py:method:: __datafusion_physical_extension_codec__(session: Any) -> object
 
 
 .. py:class:: ScalarUDF(name: str, func: collections.abc.Callable[Ellipsis, _R], input_fields: list[pyarrow.Field], return_field: pyarrow.Field, volatility: Volatility | str)
+              ScalarUDF(name: str, func: ScalarUDFExportable, input_fields: None = ..., return_field: None = ..., volatility: None = ...)
 
    Class for performing scalar user-defined functions (UDF).
 
@@ -340,13 +393,13 @@ Module Contents
 
       Wrap an already-constructed internal ``ScalarUDF`` handle.
 
-      Used by :py:meth:`SessionContext.udf` to surface a function looked
-      up from the session's function registry without re-running
-      :py:meth:`__init__`.
+      Used by :py:meth:`SessionContext.udf` and :py:meth:`from_pycapsule`
+      to wrap a handle from the session's function registry or an FFI
+      capsule without re-running :py:meth:`__init__`.
 
 
 
-   .. py:method:: from_pycapsule(func: ScalarUDFExportable) -> ScalarUDF
+   .. py:method:: from_pycapsule(func: ScalarUDFExportable | types.CapsuleType) -> ScalarUDF
       :staticmethod:
 
 
@@ -360,6 +413,7 @@ Module Contents
    .. py:method:: udf(input_fields: collections.abc.Sequence[pyarrow.DataType | pyarrow.Field] | pyarrow.DataType | pyarrow.Field, return_field: pyarrow.DataType | pyarrow.Field, volatility: Volatility | str, name: str | None = None) -> collections.abc.Callable[Ellipsis, ScalarUDF]
                   udf(func: collections.abc.Callable[Ellipsis, _R], input_fields: collections.abc.Sequence[pyarrow.DataType | pyarrow.Field] | pyarrow.DataType | pyarrow.Field, return_field: pyarrow.DataType | pyarrow.Field, volatility: Volatility | str, name: str | None = None) -> ScalarUDF
                   udf(func: ScalarUDFExportable) -> ScalarUDF
+                  udf(func: types.CapsuleType) -> ScalarUDF
       :staticmethod:
 
 
@@ -387,8 +441,9 @@ Module Contents
                            of the arguments to ``func``. This list must be of the same length
                            as the number of arguments.
       :type input_fields: list[pa.Field | pa.DataType]
-      :param return_field: The field of the return value from the function.
-      :type return_field: _R
+      :param return_field: The field of the return value
+                           from the function.
+      :type return_field: pa.DataType | pa.Field
       :param volatility: See `Volatility` for allowed values.
       :type volatility: Volatility | str
       :param name: A descriptive name for the function.
@@ -516,7 +571,7 @@ Module Contents
 
 
 
-   .. py:method:: _create_table_udf_decorator(name: str | None = None, *, with_session: bool = False) -> collections.abc.Callable[[collections.abc.Callable[Ellipsis, Any]], TableFunction]
+   .. py:method:: _create_table_udf_decorator(name: str, *, with_session: bool = False) -> collections.abc.Callable[[collections.abc.Callable[Ellipsis, Any]], TableFunction]
       :staticmethod:
 
 
@@ -769,6 +824,7 @@ Module Contents
 
 
 .. py:class:: WindowUDF(name: str, func: collections.abc.Callable[[], WindowEvaluator], input_types: list[pyarrow.DataType], return_type: pyarrow.DataType, volatility: Volatility | str)
+              WindowUDF(name: str, func: WindowUDFExportable, input_types: None = ..., return_type: None = ..., volatility: None = ...)
 
    Class for performing window user-defined functions (UDF).
 
@@ -818,9 +874,9 @@ Module Contents
 
       Wrap an already-constructed internal ``WindowUDF`` handle.
 
-      Used by :py:meth:`SessionContext.udwf` to surface a function looked
-      up from the session's function registry without re-running
-      :py:meth:`__init__`.
+      Used by :py:meth:`SessionContext.udwf` and :py:meth:`from_pycapsule`
+      to wrap a handle from the session's function registry or an FFI
+      capsule without re-running :py:meth:`__init__`.
 
 
 
@@ -840,7 +896,7 @@ Module Contents
 
 
 
-   .. py:method:: from_pycapsule(func: WindowUDFExportable) -> WindowUDF
+   .. py:method:: from_pycapsule(func: WindowUDFExportable | types.CapsuleType) -> WindowUDF
       :staticmethod:
 
 
@@ -853,6 +909,8 @@ Module Contents
 
    .. py:method:: udwf(input_types: pyarrow.DataType | list[pyarrow.DataType], return_type: pyarrow.DataType, volatility: Volatility | str, name: str | None = None) -> collections.abc.Callable[Ellipsis, WindowUDF]
                   udwf(func: collections.abc.Callable[[], WindowEvaluator], input_types: pyarrow.DataType | list[pyarrow.DataType], return_type: pyarrow.DataType, volatility: Volatility | str, name: str | None = None) -> WindowUDF
+                  udwf(func: WindowUDFExportable) -> WindowUDF
+                  udwf(func: types.CapsuleType) -> WindowUDF
       :staticmethod:
 
 
@@ -944,7 +1002,7 @@ Module Contents
    .. py:method:: __datafusion_window_udf__() -> object
 
 
-.. py:function:: _is_pycapsule(value: object) -> TypeGuard[_typeshed.CapsuleType]
+.. py:function:: _is_pycapsule(value: object) -> TypeGuard[types.CapsuleType]
 
    Return ``True`` when ``value`` is a CPython ``PyCapsule``.
 

@@ -30,6 +30,7 @@ Functions
    datafusion.functions.spark.array_contains
    datafusion.functions.spark.array_repeat
    datafusion.functions.spark.ascii
+   datafusion.functions.spark.atan2
    datafusion.functions.spark.avg
    datafusion.functions.spark.base64
    datafusion.functions.spark.bin
@@ -40,10 +41,14 @@ Functions
    datafusion.functions.spark.bitmap_count
    datafusion.functions.spark.bitwise_not
    datafusion.functions.spark.ceil
+   datafusion.functions.spark.ceiling
    datafusion.functions.spark.char
+   datafusion.functions.spark.char_length
+   datafusion.functions.spark.character_length
    datafusion.functions.spark.collect_list
    datafusion.functions.spark.collect_set
    datafusion.functions.spark.concat
+   datafusion.functions.spark.concat_ws
    datafusion.functions.spark.crc32
    datafusion.functions.spark.csc
    datafusion.functions.spark.date_add
@@ -51,14 +56,19 @@ Functions
    datafusion.functions.spark.date_part
    datafusion.functions.spark.date_sub
    datafusion.functions.spark.date_trunc
+   datafusion.functions.spark.dateadd
+   datafusion.functions.spark.datediff
+   datafusion.functions.spark.datepart
    datafusion.functions.spark.elt
    datafusion.functions.spark.expm1
    datafusion.functions.spark.factorial
    datafusion.functions.spark.floor
    datafusion.functions.spark.format_string
    datafusion.functions.spark.from_utc_timestamp
+   datafusion.functions.spark.getbit
    datafusion.functions.spark.hex
    datafusion.functions.spark.hour
+   datafusion.functions.spark.hypot
    datafusion.functions.spark.if_
    datafusion.functions.spark.ilike
    datafusion.functions.spark.is_valid_utf8
@@ -74,14 +84,20 @@ Functions
    datafusion.functions.spark.map_from_entries
    datafusion.functions.spark.minute
    datafusion.functions.spark.modulus
+   datafusion.functions.spark.monthname
    datafusion.functions.spark.negative
    datafusion.functions.spark.next_day
    datafusion.functions.spark.parse_url
    datafusion.functions.spark.pmod
+   datafusion.functions.spark.pow
+   datafusion.functions.spark.power
+   datafusion.functions.spark.printf
+   datafusion.functions.spark.quote
    datafusion.functions.spark.rint
    datafusion.functions.spark.round
    datafusion.functions.spark.sec
    datafusion.functions.spark.second
+   datafusion.functions.spark.sha
    datafusion.functions.spark.sha1
    datafusion.functions.spark.sha2
    datafusion.functions.spark.shiftleft
@@ -94,6 +110,7 @@ Functions
    datafusion.functions.spark.space
    datafusion.functions.spark.spark_cast
    datafusion.functions.spark.str_to_map
+   datafusion.functions.spark.substr
    datafusion.functions.spark.substring
    datafusion.functions.spark.time_trunc
    datafusion.functions.spark.to_utc_timestamp
@@ -109,6 +126,7 @@ Functions
    datafusion.functions.spark.unix_seconds
    datafusion.functions.spark.url_decode
    datafusion.functions.spark.url_encode
+   datafusion.functions.spark.weekday
    datafusion.functions.spark.width_bucket
    datafusion.functions.spark.xxhash64
 
@@ -210,6 +228,22 @@ Module Contents
    >>> r = df.select(dfn.functions.spark.ascii(dfn.lit("A")).alias("v"))
    >>> r.collect_column("v")[0].as_py()
    65
+
+
+.. py:function:: atan2(col1: datafusion.expr.Expr | float, col2: datafusion.expr.Expr | float) -> datafusion.expr.Expr
+
+   Spark ``atan2``: angle in radians of the point ``(col2, col1)``.
+
+   ``col1`` is the y coordinate and ``col2`` the x coordinate. Both accept
+   native numbers or :class:`Expr`.
+
+   .. rubric:: Examples
+
+   >>> ctx = dfn.SessionContext()
+   >>> df = ctx.from_pydict({"x": [1]})
+   >>> r = df.select(dfn.functions.spark.atan2(1.0, 0.0).alias("v"))
+   >>> r.collect_column("v")[0].as_py()
+   1.5707963267948966
 
 
 .. py:function:: avg(col: datafusion.expr.Expr, distinct: bool | None = None, filter: datafusion.expr.Expr | None = None, order_by: list[datafusion.expr.SortKey] | datafusion.expr.SortKey | None = None, null_treatment: datafusion.common.NullTreatment | None = None) -> datafusion.expr.Expr
@@ -350,6 +384,13 @@ Module Contents
    2
 
 
+.. py:function:: ceiling(col: datafusion.expr.Expr) -> datafusion.expr.Expr
+
+   Spark ``ceiling``: smallest integer ≥ arg.
+
+   .. seealso:: This is an alias for :py:func:`ceil`.
+
+
 .. py:function:: char(col: datafusion.expr.Expr) -> datafusion.expr.Expr
 
    Spark ``char``: ASCII character for a code point (mod 256).
@@ -361,6 +402,20 @@ Module Contents
    >>> r = df.select(dfn.functions.spark.char(dfn.lit(65)).alias("v"))
    >>> r.collect_column("v")[0].as_py()
    'A'
+
+
+.. py:function:: char_length(col: datafusion.expr.Expr) -> datafusion.expr.Expr
+
+   Spark ``char_length``: character length of a string, or bytes of binary.
+
+   .. seealso:: This is an alias for :py:func:`length`.
+
+
+.. py:function:: character_length(col: datafusion.expr.Expr) -> datafusion.expr.Expr
+
+   Spark ``character_length``: character length of a string, or bytes of binary.
+
+   .. seealso:: This is an alias for :py:func:`length`.
 
 
 .. py:function:: collect_list(col: datafusion.expr.Expr, distinct: bool | None = None, filter: datafusion.expr.Expr | None = None, order_by: list[datafusion.expr.SortKey] | datafusion.expr.SortKey | None = None, null_treatment: datafusion.common.NullTreatment | None = None) -> datafusion.expr.Expr
@@ -403,6 +458,25 @@ Module Contents
    ...     dfn.functions.spark.concat(dfn.lit("a"), dfn.lit("b")).alias("v"))
    >>> r.collect_column("v")[0].as_py()
    'ab'
+
+
+.. py:function:: concat_ws(sep: datafusion.expr.Expr | str, *cols: datafusion.expr.Expr) -> datafusion.expr.Expr
+
+   Spark ``concat_ws``: joins strings and arrays of strings with ``sep``.
+
+   NULL inputs are skipped rather than propagated.
+
+   .. rubric:: Examples
+
+   >>> ctx = dfn.SessionContext()
+   >>> df = ctx.from_pydict({"a": ["x"], "b": [None], "c": ["z"]})
+   >>> r = df.select(
+   ...     dfn.functions.spark.concat_ws(
+   ...         "-", dfn.col("a"), dfn.col("b"), dfn.col("c")
+   ...     ).alias("v")
+   ... )
+   >>> r.collect_column("v")[0].as_py()
+   'x-z'
 
 
 .. py:function:: crc32(col: datafusion.expr.Expr) -> datafusion.expr.Expr
@@ -524,6 +598,27 @@ Module Contents
    datetime.datetime(2020, 1, 1, 0, 0)
 
 
+.. py:function:: dateadd(start: datafusion.expr.Expr, days: datafusion.expr.Expr | int) -> datafusion.expr.Expr
+
+   Spark ``dateadd``: date + N days.
+
+   .. seealso:: This is an alias for :py:func:`date_add`.
+
+
+.. py:function:: datediff(end: datafusion.expr.Expr, start: datafusion.expr.Expr) -> datafusion.expr.Expr
+
+   Spark ``datediff``: number of days from ``start`` to ``end``.
+
+   .. seealso:: This is an alias for :py:func:`date_diff`.
+
+
+.. py:function:: datepart(field: datafusion.expr.Expr | str, source: datafusion.expr.Expr) -> datafusion.expr.Expr
+
+   Spark ``datepart``: extract ``field`` from a date/time/timestamp.
+
+   .. seealso:: This is an alias for :py:func:`date_part`.
+
+
 .. py:function:: elt(*inputs: datafusion.expr.Expr) -> datafusion.expr.Expr
 
    Spark ``elt``: returns the n-th input (1-indexed).
@@ -626,6 +721,13 @@ Module Contents
    datetime.datetime(2020, 1, 15, 14, 30, 45)
 
 
+.. py:function:: getbit(col: datafusion.expr.Expr, pos: datafusion.expr.Expr | str) -> datafusion.expr.Expr
+
+   Spark ``getbit``: returns the bit (0 or 1) at ``pos``.
+
+   .. seealso:: This is an alias for :py:func:`bit_get`.
+
+
 .. py:function:: hex(col: datafusion.expr.Expr) -> datafusion.expr.Expr
 
    Spark ``hex``: hexadecimal representation.
@@ -655,6 +757,21 @@ Module Contents
    >>> r = df.select(dfn.functions.spark.hour(ts).alias("v"))
    >>> r.collect_column("v")[0].as_py()
    14
+
+
+.. py:function:: hypot(col1: datafusion.expr.Expr | float, col2: datafusion.expr.Expr | float) -> datafusion.expr.Expr
+
+   Spark ``hypot``: ``sqrt(col1^2 + col2^2)`` without intermediate overflow.
+
+   Both arguments accept native numbers or :class:`Expr`.
+
+   .. rubric:: Examples
+
+   >>> ctx = dfn.SessionContext()
+   >>> df = ctx.from_pydict({"x": [1]})
+   >>> r = df.select(dfn.functions.spark.hypot(3.0, 4.0).alias("v"))
+   >>> r.collect_column("v")[0].as_py()
+   5.0
 
 
 .. py:function:: if_(condition: datafusion.expr.Expr, if_true: datafusion.expr.Expr | Any, if_false: datafusion.expr.Expr | Any) -> datafusion.expr.Expr
@@ -729,7 +846,7 @@ Module Contents
    {'c0': '1', 'c1': 'x'}
 
 
-.. py:function:: last_day(col: datafusion.expr.Expr) -> datafusion.expr.Expr
+.. py:function:: last_day(date: datafusion.expr.Expr) -> datafusion.expr.Expr
 
    Spark ``last_day``: last day of the month containing the date.
 
@@ -927,6 +1044,22 @@ Module Contents
    1
 
 
+.. py:function:: monthname(col: datafusion.expr.Expr) -> datafusion.expr.Expr
+
+   Spark ``monthname``: three-letter abbreviated month name.
+
+   .. rubric:: Examples
+
+   >>> import pyarrow as pa
+   >>> from datetime import date
+   >>> ctx = dfn.SessionContext()
+   >>> df = ctx.from_pydict({"x": [1]})
+   >>> d = dfn.lit(pa.scalar(date(2024, 3, 15)))
+   >>> r = df.select(dfn.functions.spark.monthname(d).alias("v"))
+   >>> r.collect_column("v")[0].as_py()
+   'Mar'
+
+
 .. py:function:: negative(col: datafusion.expr.Expr) -> datafusion.expr.Expr
 
    Spark ``negative``: unary minus.
@@ -1007,6 +1140,63 @@ Module Contents
    2
 
 
+.. py:function:: pow(col1: datafusion.expr.Expr | float, col2: datafusion.expr.Expr | float) -> datafusion.expr.Expr
+
+   Spark ``pow``: ``col1`` raised to the power ``col2``, as a double.
+
+   Both arguments accept native numbers or :class:`Expr`.
+
+   .. rubric:: Examples
+
+   >>> ctx = dfn.SessionContext()
+   >>> df = ctx.from_pydict({"x": [1]})
+   >>> r = df.select(dfn.functions.spark.pow(2, 10).alias("v"))
+   >>> r.collect_column("v")[0].as_py()
+   1024.0
+
+
+.. py:function:: power(col1: datafusion.expr.Expr | float, col2: datafusion.expr.Expr | float) -> datafusion.expr.Expr
+
+   Spark ``power``: ``col1`` raised to the power ``col2``.
+
+   .. seealso:: This is an alias for :py:func:`pow`.
+
+
+.. py:function:: printf(format: datafusion.expr.Expr | str, *cols: datafusion.expr.Expr | str) -> datafusion.expr.Expr
+
+   Spark ``printf``: printf-style format string.
+
+   Unlike :py:func:`format_string`, a bare ``str`` ``format`` or ``cols`` entry
+   is treated as a column name (matching pyspark), not a literal; pass
+   :func:`~datafusion.lit` for a literal format.
+
+   .. rubric:: Examples
+
+   >>> ctx = dfn.SessionContext()
+   >>> df = ctx.from_pydict({"a": ["aa%d%s"], "b": [123], "c": ["cc"]})
+   >>> r = df.select(dfn.functions.spark.printf("a", "b", "c").alias("v"))
+   >>> r.collect_column("v")[0].as_py()
+   'aa123cc'
+
+   >>> r = df.select(
+   ...     dfn.functions.spark.printf(dfn.lit("%d-%s"), "b", "c").alias("v"))
+   >>> r.collect_column("v")[0].as_py()
+   '123-cc'
+
+
+.. py:function:: quote(col: datafusion.expr.Expr) -> datafusion.expr.Expr
+
+   Spark ``quote``: wraps a string in single quotes, escaping inner quotes.
+
+   .. rubric:: Examples
+
+   >>> ctx = dfn.SessionContext()
+   >>> df = ctx.from_pydict({"x": [1]})
+   >>> r = df.select(dfn.functions.spark.quote(dfn.lit("it's")).alias("v"))
+   >>> print(r.collect_column("v")[0].as_py())
+   'it\'s'
+
+
 .. py:function:: rint(col: datafusion.expr.Expr) -> datafusion.expr.Expr
 
    Spark ``rint``: round to nearest mathematical integer (as double).
@@ -1070,6 +1260,13 @@ Module Contents
    >>> r = df.select(dfn.functions.spark.second(ts).alias("v"))
    >>> r.collect_column("v")[0].as_py()
    45
+
+
+.. py:function:: sha(col: datafusion.expr.Expr) -> datafusion.expr.Expr
+
+   Spark ``sha``: SHA-1 hash as a hex string.
+
+   .. seealso:: This is an alias for :py:func:`sha1`.
 
 
 .. py:function:: sha1(col: datafusion.expr.Expr) -> datafusion.expr.Expr
@@ -1196,12 +1393,10 @@ Module Contents
    .. rubric:: Examples
 
    >>> ctx = dfn.SessionContext()
-   >>> df = ctx.from_pydict({"x": [1]})
+   >>> df = ctx.from_pydict({"x": [[1, 2, 3, 4]]})
    >>> r = df.select(
    ...     dfn.functions.spark.slice(
-   ...         dfn.functions.spark.array(
-   ...             dfn.lit(1), dfn.lit(2), dfn.lit(3), dfn.lit(4)),
-   ...         2, 2,
+   ...         dfn.col("x"), 2, 2,
    ...     ).alias("v")
    ... )
    >>> r.collect_column("v")[0].as_py()
@@ -1285,6 +1480,27 @@ Module Contents
    ... )
    >>> r.collect_column("v")[0].as_py()
    [('a', '1'), ('b', '2')]
+
+
+.. py:function:: substr(str: datafusion.expr.Expr, pos: datafusion.expr.Expr | int, len: datafusion.expr.Expr | int | None = None) -> datafusion.expr.Expr
+
+   Spark ``substr``: 1-indexed substring, to the end when ``len`` is omitted.
+
+   Same as :py:func:`substring` except that ``len`` is optional. ``pos`` and
+   ``len`` accept native ``int`` values or :class:`Expr`.
+
+   .. rubric:: Examples
+
+   >>> ctx = dfn.SessionContext()
+   >>> df = ctx.from_pydict({"x": [1]})
+   >>> r = df.select(dfn.functions.spark.substr(dfn.lit("hello"), 2).alias("v"))
+   >>> r.collect_column("v")[0].as_py()
+   'ello'
+
+   >>> r = df.select(
+   ...     dfn.functions.spark.substr(dfn.lit("hello"), 2, len=3).alias("v"))
+   >>> r.collect_column("v")[0].as_py()
+   'ell'
 
 
 .. py:function:: substring(str: datafusion.expr.Expr, pos: datafusion.expr.Expr | int, len: datafusion.expr.Expr | int) -> datafusion.expr.Expr
@@ -1534,6 +1750,22 @@ Module Contents
    ...     dfn.functions.spark.url_encode(dfn.lit("a b")).alias("v"))
    >>> r.collect_column("v")[0].as_py()
    'a+b'
+
+
+.. py:function:: weekday(col: datafusion.expr.Expr) -> datafusion.expr.Expr
+
+   Spark ``weekday``: day of the week, Monday = 0 through Sunday = 6.
+
+   .. rubric:: Examples
+
+   >>> import pyarrow as pa
+   >>> from datetime import date
+   >>> ctx = dfn.SessionContext()
+   >>> df = ctx.from_pydict({"x": [1]})
+   >>> d = dfn.lit(pa.scalar(date(2024, 3, 15)))
+   >>> r = df.select(dfn.functions.spark.weekday(d).alias("v"))
+   >>> r.collect_column("v")[0].as_py()
+   4
 
 
 .. py:function:: width_bucket(v: datafusion.expr.Expr, min: datafusion.expr.Expr, max: datafusion.expr.Expr, numBucket: datafusion.expr.Expr | int) -> datafusion.expr.Expr

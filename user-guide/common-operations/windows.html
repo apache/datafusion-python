@@ -33,6 +33,7 @@
     <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=8f2a1f02" />
     <link rel="stylesheet" type="text/css" href="../../_static/mystnb.11b39860a7a0cbfd473a3ad8a317855267ff0bd372690045ca344a6b62be495e.css" />
     <link rel="stylesheet" type="text/css" href="../../_static/graphviz.css?v=4ae1632d" />
+    <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
     <link rel="stylesheet" type="text/css" href="../../_static/theme_overrides.css?v=4af573bc" />
   
   <!-- So that users can add custom icons -->
@@ -44,6 +45,8 @@
     <script src="../../_static/documentation_options.js?v=5929fcd5"></script>
     <script src="../../_static/doctools.js?v=9bcbadda"></script>
     <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="../../_static/copybutton.js?v=f281be69"></script>
     <script>DOCUMENTATION_OPTIONS.pagename = 'user-guide/common-operations/windows';</script>
     <script src="../../_static/toc-toggle.js?v=36375f01"></script>
     <link rel="icon" href="../../_static/favicon.svg"/>
@@ -138,6 +141,13 @@
 <li class="nav-item current active">
   <a class="nav-link nav-internal" href="../index.html">
     User Guide
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../extension-guide/index.html">
+    Extension Guide
   </a>
 </li>
 
@@ -271,6 +281,13 @@
 
 
 <li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../extension-guide/index.html">
+    Extension Guide
+  </a>
+</li>
+
+
+<li class="nav-item ">
   <a class="nav-link nav-internal" href="../../contributor-guide/index.html">
     Contributor Guide
   </a>
@@ -380,15 +397,34 @@
 </ul>
 </details></li>
 <li class="toctree-l2"><a class="reference internal" href="../configuration.html">Configuration</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../distributing-work.html">Distributing work</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../extensions.html">Using extension libraries</a></li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../distributing-work/index.html">Distributing work</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l3"><a class="reference internal" href="../distributing-work/expressions.html">Shipping expressions to workers</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../distributing-work/query-engines.html">Distributed query engines</a></li>
+</ul>
+</details></li>
 <li class="toctree-l2"><a class="reference internal" href="../sql.html">SQL</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../upgrade-guides.html">Upgrade Guides</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../ai-coding-assistants.html">Using AI Coding Assistants</a></li>
 </ul>
 </details></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../../extension-guide/index.html">Extension Guide</a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../extension-guide/why-ffi.html">Why FFI</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../extension-guide/capsule-protocol.html">The capsule protocol</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../extension-guide/table-providers.html">Providers and catalogs</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../extension-guide/functions.html">Functions and table functions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../extension-guide/codecs.html">Extension codecs</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../extension-guide/bundles.html">Extension bundles</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../extension-guide/query-planners.html">Query planners</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../extension-guide/other-components.html">Optimizer rules and configuration</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../extension-guide/sessions.html">Sessions, handles, and lifetimes</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../extension-guide/checklist.html">Extension author checklist</a></li>
+</ul>
+</details></li>
 <li class="toctree-l1 has-children"><a class="reference internal" href="../../contributor-guide/index.html">Contributor Guide</a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
 <li class="toctree-l2"><a class="reference internal" href="../../contributor-guide/introduction.html">Introduction</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../contributor-guide/ffi.html">Python Extensions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../contributor-guide/pyo3-guidelines.html">PyO3 binding guidelines</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../contributor-guide/ffi-internals.html">FFI framing internals</a></li>
 </ul>
 </details></li>
 <li class="toctree-l1 has-children"><a class="reference internal" href="../../autoapi/index.html">API Reference</a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
@@ -398,6 +434,7 @@
 <li class="toctree-l3"><a class="reference internal" href="../../autoapi/datafusion/dataframe/index.html">datafusion.dataframe</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../autoapi/datafusion/dataframe_formatter/index.html">datafusion.dataframe_formatter</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../autoapi/datafusion/expr/index.html">datafusion.expr</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../autoapi/datafusion/extensions/index.html">datafusion.extensions</a></li>
 <li class="toctree-l3 has-children"><a class="reference internal" href="../../autoapi/datafusion/functions/index.html">datafusion.functions</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
 <li class="toctree-l4"><a class="reference internal" href="../../autoapi/datafusion/functions/spark/index.html">datafusion.functions.spark</a></li>
 </ul>
@@ -704,12 +741,47 @@ Data truncated.
 </div>
 </div>
 </div>
+<section id="chaining-onto-a-window-function">
+<span id="window-function-chaining"></span><h4>Chaining onto a window function<a class="headerlink" href="#chaining-onto-a-window-function" title="Link to this heading">#</a></h4>
+<p>Set a window function’s <code class="docutils literal notranslate"><span class="pre">partition_by</span></code>, <code class="docutils literal notranslate"><span class="pre">order_by</span></code>, and <code class="docutils literal notranslate"><span class="pre">window_frame</span></code> in one
+place: its keyword arguments, a single <code class="docutils literal notranslate"><span class="pre">over()</span></code>, or one builder chain ending in
+<code class="docutils literal notranslate"><span class="pre">build()</span></code>. Chaining a builder method or <code class="docutils literal notranslate"><span class="pre">over()</span></code> onto a window function that
+already has any of them raises:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Raises: lead already has window options (order_by)</span>
+<span class="n">f</span><span class="o">.</span><span class="n">lead</span><span class="p">(</span><span class="n">col</span><span class="p">(</span><span class="s2">&quot;v&quot;</span><span class="p">),</span> <span class="n">order_by</span><span class="o">=</span><span class="s2">&quot;t&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">over</span><span class="p">(</span><span class="n">Window</span><span class="p">(</span><span class="n">partition_by</span><span class="o">=</span><span class="p">[</span><span class="n">col</span><span class="p">(</span><span class="s2">&quot;g&quot;</span><span class="p">)]))</span>
+
+<span class="c1"># Set them together instead.</span>
+<span class="n">f</span><span class="o">.</span><span class="n">lead</span><span class="p">(</span><span class="n">col</span><span class="p">(</span><span class="s2">&quot;v&quot;</span><span class="p">))</span><span class="o">.</span><span class="n">over</span><span class="p">(</span><span class="n">Window</span><span class="p">(</span><span class="n">partition_by</span><span class="o">=</span><span class="p">[</span><span class="n">col</span><span class="p">(</span><span class="s2">&quot;g&quot;</span><span class="p">)],</span> <span class="n">order_by</span><span class="o">=</span><span class="s2">&quot;t&quot;</span><span class="p">))</span>
+</pre></div>
+</div>
+<p>A built window function stores a concrete frame with no record of whether you
+chose it or it was derived from <code class="docutils literal notranslate"><span class="pre">order_by</span></code>, so the options cannot be merged
+without guessing. Merging may become possible once
+<a class="reference external" href="https://github.com/apache/datafusion/issues/25934">apache/datafusion#25934</a>
+is resolved.</p>
+<p>The <code class="docutils literal notranslate"><span class="pre">null_treatment</span></code> already set is kept, as are <code class="docutils literal notranslate"><span class="pre">filter</span></code> and <code class="docutils literal notranslate"><span class="pre">distinct</span></code> on an
+aggregate used as a window function. The whole-partition frame counts as no
+frame, so adding an <code class="docutils literal notranslate"><span class="pre">order_by</span></code> derives the running frame, even when you passed
+that frame explicitly:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">whole</span> <span class="o">=</span> <span class="n">WindowFrame</span><span class="p">(</span><span class="s2">&quot;rows&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>  <span class="c1"># same as the no-order_by default</span>
+
+<span class="c1"># Both give a running sum.</span>
+<span class="n">f</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">col</span><span class="p">(</span><span class="s2">&quot;v&quot;</span><span class="p">))</span><span class="o">.</span><span class="n">over</span><span class="p">(</span><span class="n">Window</span><span class="p">())</span><span class="o">.</span><span class="n">order_by</span><span class="p">(</span><span class="n">col</span><span class="p">(</span><span class="s2">&quot;v&quot;</span><span class="p">))</span><span class="o">.</span><span class="n">build</span><span class="p">()</span>
+<span class="n">f</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">col</span><span class="p">(</span><span class="s2">&quot;v&quot;</span><span class="p">))</span><span class="o">.</span><span class="n">over</span><span class="p">(</span><span class="n">Window</span><span class="p">(</span><span class="n">window_frame</span><span class="o">=</span><span class="n">whole</span><span class="p">))</span><span class="o">.</span><span class="n">order_by</span><span class="p">(</span><span class="n">col</span><span class="p">(</span><span class="s2">&quot;v&quot;</span><span class="p">))</span><span class="o">.</span><span class="n">build</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>To keep that frame, set it after the <code class="docutils literal notranslate"><span class="pre">order_by</span></code>, or pass both in one <code class="docutils literal notranslate"><span class="pre">Window</span></code>:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">f</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">col</span><span class="p">(</span><span class="s2">&quot;v&quot;</span><span class="p">))</span><span class="o">.</span><span class="n">over</span><span class="p">(</span><span class="n">Window</span><span class="p">())</span><span class="o">.</span><span class="n">order_by</span><span class="p">(</span><span class="n">col</span><span class="p">(</span><span class="s2">&quot;v&quot;</span><span class="p">))</span><span class="o">.</span><span class="n">window_frame</span><span class="p">(</span><span class="n">whole</span><span class="p">)</span><span class="o">.</span><span class="n">build</span><span class="p">()</span>
+<span class="n">f</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">col</span><span class="p">(</span><span class="s2">&quot;v&quot;</span><span class="p">))</span><span class="o">.</span><span class="n">over</span><span class="p">(</span><span class="n">Window</span><span class="p">(</span><span class="n">order_by</span><span class="o">=</span><span class="n">col</span><span class="p">(</span><span class="s2">&quot;v&quot;</span><span class="p">),</span> <span class="n">window_frame</span><span class="o">=</span><span class="n">whole</span><span class="p">))</span>
+</pre></div>
+</div>
+</section>
 </section>
 <section id="null-treatment">
 <h3>Null Treatment<a class="headerlink" href="#null-treatment" title="Link to this heading">#</a></h3>
 <p>When using aggregate functions as window functions, it is often useful to specify how null values
-should be treated. In order to do this you need to use the builder function. In future releases
-we expect this to be simplified in the interface.</p>
+should be treated. Pass <code class="docutils literal notranslate"><span class="pre">null_treatment</span></code> in the <code class="docutils literal notranslate"><span class="pre">Window</span></code>, or set it on the aggregate itself, which
+<code class="docutils literal notranslate"><span class="pre">over()</span></code> keeps (see <a class="reference internal" href="#aggregate-over-options"><span class="std std-ref">Options set on the aggregate</span></a>).</p>
 <p>One common usage for handling nulls is the case where you want to find the last value up to the
 current row. In the following example we demonstrate how setting the null treatment to ignore
 nulls will fill in with the value of the most recent non-null row. To do this, we also will set
@@ -810,6 +882,25 @@ Data truncated.
 </div>
 </div>
 </div>
+<section id="options-set-on-the-aggregate">
+<span id="aggregate-over-options"></span><h3>Options set on the aggregate<a class="headerlink" href="#options-set-on-the-aggregate" title="Link to this heading">#</a></h3>
+<p><code class="docutils literal notranslate"><span class="pre">over()</span></code> keeps the <code class="docutils literal notranslate"><span class="pre">filter</span></code>, <code class="docutils literal notranslate"><span class="pre">distinct</span></code>, and <code class="docutils literal notranslate"><span class="pre">null_treatment</span></code> options an
+aggregate was built with:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Averages the distinct values 1.0 and 4.0.</span>
+<span class="n">f</span><span class="o">.</span><span class="n">avg</span><span class="p">(</span><span class="n">col</span><span class="p">(</span><span class="s2">&quot;v&quot;</span><span class="p">),</span> <span class="n">distinct</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span><span class="o">.</span><span class="n">over</span><span class="p">(</span><span class="n">Window</span><span class="p">())</span>
+</pre></div>
+</div>
+<p>An aggregate’s <code class="docutils literal notranslate"><span class="pre">order_by</span></code> raises, as <code class="docutils literal notranslate"><span class="pre">ORDER</span> <span class="pre">BY</span></code> inside an aggregate call does
+with <code class="docutils literal notranslate"><span class="pre">OVER</span></code> in SQL. A window does not pass an ordering to the aggregate, so
+the <code class="docutils literal notranslate"><span class="pre">order_by</span></code> in the <code class="docutils literal notranslate"><span class="pre">Window</span></code> only sets the frame and the order of rows. The
+one exception is a <code class="docutils literal notranslate"><span class="pre">WITHIN</span> <span class="pre">GROUP</span></code> function such as
+<a class="reference internal" href="../../autoapi/datafusion/functions/index.html#datafusion.functions.percentile_cont" title="datafusion.functions.percentile_cont"><code class="xref py py-func docutils literal notranslate"><span class="pre">percentile_cont()</span></code></a>, which computes ascending as a
+window: an ascending <code class="docutils literal notranslate"><span class="pre">sort_expression</span></code> is accepted, and a descending one raises.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">f</span><span class="o">.</span><span class="n">percentile_cont</span><span class="p">(</span><span class="n">col</span><span class="p">(</span><span class="s2">&quot;v&quot;</span><span class="p">),</span> <span class="mf">0.25</span><span class="p">)</span><span class="o">.</span><span class="n">over</span><span class="p">(</span><span class="n">Window</span><span class="p">())</span>  <span class="c1"># ascending, accepted</span>
+<span class="n">f</span><span class="o">.</span><span class="n">percentile_cont</span><span class="p">(</span><span class="n">col</span><span class="p">(</span><span class="s2">&quot;v&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">sort</span><span class="p">(</span><span class="n">ascending</span><span class="o">=</span><span class="kc">False</span><span class="p">),</span> <span class="mf">0.25</span><span class="p">)</span><span class="o">.</span><span class="n">over</span><span class="p">(</span><span class="n">Window</span><span class="p">())</span>  <span class="c1"># raises</span>
+</pre></div>
+</div>
+</section>
 </section>
 <section id="available-functions">
 <h2>Available Functions<a class="headerlink" href="#available-functions" title="Link to this heading">#</a></h2>
@@ -914,11 +1005,17 @@ must be importable on the receiving worker. See
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#setting-parameters">Setting Parameters</a><ul class="visible nav section-nav flex-column">
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#ordering">Ordering</a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#partitions">Partitions</a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#window-frame">Window Frame</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#window-frame">Window Frame</a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#chaining-onto-a-window-function">Chaining onto a window function</a></li>
+</ul>
+</li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#null-treatment">Null Treatment</a></li>
 </ul>
 </li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#aggregate-functions">Aggregate Functions</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#aggregate-functions">Aggregate Functions</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#options-set-on-the-aggregate">Options set on the aggregate</a></li>
+</ul>
+</li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#available-functions">Available Functions</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#user-defined-window-functions">User-Defined Window Functions</a></li>
 </ul>

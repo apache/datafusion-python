@@ -33,6 +33,7 @@
     <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=8f2a1f02" />
     <link rel="stylesheet" type="text/css" href="../../_static/mystnb.11b39860a7a0cbfd473a3ad8a317855267ff0bd372690045ca344a6b62be495e.css" />
     <link rel="stylesheet" type="text/css" href="../../_static/graphviz.css?v=4ae1632d" />
+    <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
     <link rel="stylesheet" type="text/css" href="../../_static/theme_overrides.css?v=4af573bc" />
   
   <!-- So that users can add custom icons -->
@@ -44,6 +45,8 @@
     <script src="../../_static/documentation_options.js?v=5929fcd5"></script>
     <script src="../../_static/doctools.js?v=9bcbadda"></script>
     <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="../../_static/copybutton.js?v=f281be69"></script>
     <script>DOCUMENTATION_OPTIONS.pagename = 'autoapi/datafusion/index';</script>
     <script src="../../_static/toc-toggle.js?v=36375f01"></script>
     <link rel="icon" href="../../_static/favicon.svg"/>
@@ -138,6 +141,13 @@
 <li class="nav-item ">
   <a class="nav-link nav-internal" href="../../user-guide/index.html">
     User Guide
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../extension-guide/index.html">
+    Extension Guide
   </a>
 </li>
 
@@ -271,6 +281,13 @@
 
 
 <li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../extension-guide/index.html">
+    Extension Guide
+  </a>
+</li>
+
+
+<li class="nav-item ">
   <a class="nav-link nav-internal" href="../../contributor-guide/index.html">
     Contributor Guide
   </a>
@@ -380,15 +397,34 @@
 </ul>
 </details></li>
 <li class="toctree-l2"><a class="reference internal" href="../../user-guide/configuration.html">Configuration</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../user-guide/distributing-work.html">Distributing work</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../user-guide/extensions.html">Using extension libraries</a></li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../../user-guide/distributing-work/index.html">Distributing work</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../user-guide/distributing-work/expressions.html">Shipping expressions to workers</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../user-guide/distributing-work/query-engines.html">Distributed query engines</a></li>
+</ul>
+</details></li>
 <li class="toctree-l2"><a class="reference internal" href="../../user-guide/sql.html">SQL</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../user-guide/upgrade-guides.html">Upgrade Guides</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../user-guide/ai-coding-assistants.html">Using AI Coding Assistants</a></li>
 </ul>
 </details></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../../extension-guide/index.html">Extension Guide</a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../extension-guide/why-ffi.html">Why FFI</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../extension-guide/capsule-protocol.html">The capsule protocol</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../extension-guide/table-providers.html">Providers and catalogs</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../extension-guide/functions.html">Functions and table functions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../extension-guide/codecs.html">Extension codecs</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../extension-guide/bundles.html">Extension bundles</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../extension-guide/query-planners.html">Query planners</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../extension-guide/other-components.html">Optimizer rules and configuration</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../extension-guide/sessions.html">Sessions, handles, and lifetimes</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../extension-guide/checklist.html">Extension author checklist</a></li>
+</ul>
+</details></li>
 <li class="toctree-l1 has-children"><a class="reference internal" href="../../contributor-guide/index.html">Contributor Guide</a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
 <li class="toctree-l2"><a class="reference internal" href="../../contributor-guide/introduction.html">Introduction</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../contributor-guide/ffi.html">Python Extensions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../contributor-guide/pyo3-guidelines.html">PyO3 binding guidelines</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../contributor-guide/ffi-internals.html">FFI framing internals</a></li>
 </ul>
 </details></li>
 <li class="toctree-l1 current active has-children"><a class="reference internal" href="../index.html">API Reference</a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul class="current">
@@ -398,6 +434,7 @@
 <li class="toctree-l3"><a class="reference internal" href="dataframe/index.html">datafusion.dataframe</a></li>
 <li class="toctree-l3"><a class="reference internal" href="dataframe_formatter/index.html">datafusion.dataframe_formatter</a></li>
 <li class="toctree-l3"><a class="reference internal" href="expr/index.html">datafusion.expr</a></li>
+<li class="toctree-l3"><a class="reference internal" href="extensions/index.html">datafusion.extensions</a></li>
 <li class="toctree-l3 has-children"><a class="reference internal" href="functions/index.html">datafusion.functions</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
 <li class="toctree-l4"><a class="reference internal" href="functions/spark/index.html">datafusion.functions.spark</a></li>
 </ul>
@@ -536,6 +573,7 @@ common pitfalls), written in a dense, skill-oriented format:
 <li class="toctree-l1"><a class="reference internal" href="dataframe/index.html">datafusion.dataframe</a></li>
 <li class="toctree-l1"><a class="reference internal" href="dataframe_formatter/index.html">datafusion.dataframe_formatter</a></li>
 <li class="toctree-l1"><a class="reference internal" href="expr/index.html">datafusion.expr</a></li>
+<li class="toctree-l1"><a class="reference internal" href="extensions/index.html">datafusion.extensions</a></li>
 <li class="toctree-l1"><a class="reference internal" href="functions/index.html">datafusion.functions</a></li>
 <li class="toctree-l1"><a class="reference internal" href="input/index.html">datafusion.input</a></li>
 <li class="toctree-l1"><a class="reference internal" href="io/index.html">datafusion.io</a></li>
@@ -607,31 +645,34 @@ common pitfalls), written in a dense, skill-oriented format:
 <tr class="row-even"><td><p><a class="reference internal" href="#datafusion.ParquetWriterOptions" title="datafusion.ParquetWriterOptions"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ParquetWriterOptions</span></code></a></p></td>
 <td><p>Advanced parquet writer options.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.RecordBatch" title="datafusion.RecordBatch"><code class="xref py py-obj docutils literal notranslate"><span class="pre">RecordBatch</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.PhysicalPartitioning" title="datafusion.PhysicalPartitioning"><code class="xref py py-obj docutils literal notranslate"><span class="pre">PhysicalPartitioning</span></code></a></p></td>
+<td><p>How a physical plan's output rows are spread across its partitions.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#datafusion.RecordBatch" title="datafusion.RecordBatch"><code class="xref py py-obj docutils literal notranslate"><span class="pre">RecordBatch</span></code></a></p></td>
 <td><p>This class is essentially a wrapper for <code class="xref py py-class docutils literal notranslate"><span class="pre">pa.RecordBatch</span></code>.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#datafusion.RecordBatchStream" title="datafusion.RecordBatchStream"><code class="xref py py-obj docutils literal notranslate"><span class="pre">RecordBatchStream</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.RecordBatchStream" title="datafusion.RecordBatchStream"><code class="xref py py-obj docutils literal notranslate"><span class="pre">RecordBatchStream</span></code></a></p></td>
 <td><p>This class represents a stream of record batches.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.RuntimeEnvBuilder" title="datafusion.RuntimeEnvBuilder"><code class="xref py py-obj docutils literal notranslate"><span class="pre">RuntimeEnvBuilder</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#datafusion.RuntimeEnvBuilder" title="datafusion.RuntimeEnvBuilder"><code class="xref py py-obj docutils literal notranslate"><span class="pre">RuntimeEnvBuilder</span></code></a></p></td>
 <td><p>Runtime configuration options.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#datafusion.SQLOptions" title="datafusion.SQLOptions"><code class="xref py py-obj docutils literal notranslate"><span class="pre">SQLOptions</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.SQLOptions" title="datafusion.SQLOptions"><code class="xref py py-obj docutils literal notranslate"><span class="pre">SQLOptions</span></code></a></p></td>
 <td><p>Options to be used when performing SQL queries.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.SessionConfig" title="datafusion.SessionConfig"><code class="xref py py-obj docutils literal notranslate"><span class="pre">SessionConfig</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#datafusion.SessionConfig" title="datafusion.SessionConfig"><code class="xref py py-obj docutils literal notranslate"><span class="pre">SessionConfig</span></code></a></p></td>
 <td><p>Session configuration options.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#datafusion.Table" title="datafusion.Table"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Table</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.Table" title="datafusion.Table"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Table</span></code></a></p></td>
 <td><p>A DataFusion table.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.TableProviderFactory" title="datafusion.TableProviderFactory"><code class="xref py py-obj docutils literal notranslate"><span class="pre">TableProviderFactory</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#datafusion.TableProviderFactory" title="datafusion.TableProviderFactory"><code class="xref py py-obj docutils literal notranslate"><span class="pre">TableProviderFactory</span></code></a></p></td>
 <td><p>Abstract class for defining a Python based Table Provider Factory.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#datafusion.TableProviderFactoryExportable" title="datafusion.TableProviderFactoryExportable"><code class="xref py py-obj docutils literal notranslate"><span class="pre">TableProviderFactoryExportable</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.TableProviderFactoryExportable" title="datafusion.TableProviderFactoryExportable"><code class="xref py py-obj docutils literal notranslate"><span class="pre">TableProviderFactoryExportable</span></code></a></p></td>
 <td><p>Type hint for object that has __datafusion_table_provider_factory__ PyCapsule.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.WindowFrame" title="datafusion.WindowFrame"><code class="xref py py-obj docutils literal notranslate"><span class="pre">WindowFrame</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#datafusion.WindowFrame" title="datafusion.WindowFrame"><code class="xref py py-obj docutils literal notranslate"><span class="pre">WindowFrame</span></code></a></p></td>
 <td><p>Defines a window frame for performing window operations.</p></td>
 </tr>
 </tbody>
@@ -974,7 +1015,7 @@ See the individual implementation and documentation for details.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="datafusion.ExecutionPlan.children">
 <span class="sig-name descname"><span class="pre">children</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#datafusion.ExecutionPlan" title="datafusion.ExecutionPlan"><span class="pre">ExecutionPlan</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#datafusion.ExecutionPlan.children" title="Link to this definition">#</a></dt>
-<dd><p>Get a list of children <cite>ExecutionPlan</cite> that act as inputs to this plan.</p>
+<dd><p>Get a list of children <code class="docutils literal notranslate"><span class="pre">ExecutionPlan</span></code> that act as inputs to this plan.</p>
 <p>The returned list will be empty for leaf nodes such as scans, will contain a
 single value for unary nodes, or two values for binary nodes (such as joins).</p>
 </dd></dl>
@@ -1023,9 +1064,17 @@ DataFrame has been executed.</p>
 <dt class="sig sig-object py" id="datafusion.ExecutionPlan.from_bytes">
 <em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">from_bytes</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ctx</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="context/index.html#datafusion.context.SessionContext" title="datafusion.context.SessionContext"><span class="pre">datafusion.context.SessionContext</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">data</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bytes</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#datafusion.ExecutionPlan" title="datafusion.ExecutionPlan"><span class="pre">ExecutionPlan</span></a></span></span><a class="headerlink" href="#datafusion.ExecutionPlan.from_bytes" title="Link to this definition">#</a></dt>
 <dd><p>Create an ExecutionPlan from serialized protobuf bytes.</p>
-<p>Decoding routes through the session’s installed
-<cite>PhysicalExtensionCodec</cite>. Tables created in memory from record
-batches are currently not supported.</p>
+<p>Decoding routes through the codecs installed on <code class="docutils literal notranslate"><span class="pre">ctx</span></code> with
+<code class="xref py py-meth docutils literal notranslate"><span class="pre">with_physical_extension_codec()</span></code>.</p>
+<p>Unlike <a class="reference internal" href="#datafusion.Expr.from_bytes" title="datafusion.Expr.from_bytes"><code class="xref py py-meth docutils literal notranslate"><span class="pre">datafusion.Expr.from_bytes()</span></code></a>, <code class="docutils literal notranslate"><span class="pre">ctx</span></code> is required and
+positional, and there is no fallback to a worker or global context.
+<code class="docutils literal notranslate"><span class="pre">ctx</span></code> need share nothing with the session that encoded the plan: a
+scan over a table registered from record batches decodes here, because
+the batches travel inside the encoded scan.</p>
+<div class="admonition seealso">
+<p class="admonition-title">See also</p>
+<p><a class="reference internal" href="#datafusion.ExecutionPlan.to_bytes" title="datafusion.ExecutionPlan.to_bytes"><code class="xref py py-meth docutils literal notranslate"><span class="pre">to_bytes()</span></code></a>, <a class="reference internal" href="#datafusion.LogicalPlan.from_bytes" title="datafusion.LogicalPlan.from_bytes"><code class="xref py py-meth docutils literal notranslate"><span class="pre">LogicalPlan.from_bytes()</span></code></a>.</p>
+</div>
 </dd></dl>
 
 <dl class="py method">
@@ -1048,9 +1097,20 @@ meaningful after the DataFrame has been executed.</p>
 <dt class="sig sig-object py" id="datafusion.ExecutionPlan.to_bytes">
 <span class="sig-name descname"><span class="pre">to_bytes</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ctx</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="context/index.html#datafusion.context.SessionContext" title="datafusion.context.SessionContext"><span class="pre">datafusion.context.SessionContext</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bytes</span></span></span><a class="headerlink" href="#datafusion.ExecutionPlan.to_bytes" title="Link to this definition">#</a></dt>
 <dd><p>Convert an ExecutionPlan into serialized protobuf bytes.</p>
-<p>When <code class="docutils literal notranslate"><span class="pre">ctx</span></code> is supplied, encoding routes through the session’s
-installed <cite>PhysicalExtensionCodec</cite>. Tables created in memory
-from record batches are currently not supported.</p>
+<p>When <code class="docutils literal notranslate"><span class="pre">ctx</span></code> is supplied, encoding routes through the codecs
+installed on it with
+<code class="xref py py-meth docutils literal notranslate"><span class="pre">with_physical_extension_codec()</span></code>.</p>
+<p>Unlike <a class="reference internal" href="#datafusion.LogicalPlan.to_bytes" title="datafusion.LogicalPlan.to_bytes"><code class="xref py py-meth docutils literal notranslate"><span class="pre">LogicalPlan.to_bytes()</span></code></a>, a plan reading a table
+registered from record batches does round-trip: the batches travel
+inside the encoded scan.</p>
+<p>Round-tripping through this method and <a class="reference internal" href="#datafusion.ExecutionPlan.from_bytes" title="datafusion.ExecutionPlan.from_bytes"><code class="xref py py-meth docutils literal notranslate"><span class="pre">from_bytes()</span></code></a> is how
+an extension library checks that its own codec claimed its nodes,
+rather than a codec installed earlier in the chain — see
+<a class="reference internal" href="../../extension-guide/codecs.html#extension-codec-order"><span class="std std-ref">When codec order matters</span></a>.</p>
+<div class="admonition seealso">
+<p class="admonition-title">See also</p>
+<p><a class="reference internal" href="#datafusion.ExecutionPlan.from_bytes" title="datafusion.ExecutionPlan.from_bytes"><code class="xref py py-meth docutils literal notranslate"><span class="pre">from_bytes()</span></code></a>, <a class="reference internal" href="#datafusion.LogicalPlan.to_bytes" title="datafusion.LogicalPlan.to_bytes"><code class="xref py py-meth docutils literal notranslate"><span class="pre">LogicalPlan.to_bytes()</span></code></a>.</p>
+</div>
 </dd></dl>
 
 <dl class="py method">
@@ -1065,9 +1125,49 @@ from record batches are currently not supported.</p>
 <dd></dd></dl>
 
 <dl class="py property">
+<dt class="sig sig-object py" id="datafusion.ExecutionPlan.output_partitioning">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">output_partitioning</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="#datafusion.PhysicalPartitioning" title="datafusion.PhysicalPartitioning"><span class="pre">PhysicalPartitioning</span></a></em><a class="headerlink" href="#datafusion.ExecutionPlan.output_partitioning" title="Link to this definition">#</a></dt>
+<dd><p>Returns how this plan’s output rows are spread across its partitions.</p>
+<p>Where <a class="reference internal" href="#datafusion.ExecutionPlan.partition_count" title="datafusion.ExecutionPlan.partition_count"><code class="xref py py-attr docutils literal notranslate"><span class="pre">partition_count</span></code></a> gives only the number of partitions,
+this also reports the scheme, so a caller executing partitions
+separately can tell whether they are hash-distributed on known keys or
+merely counted. A plan does not necessarily partition the way it was
+asked to; see <a class="reference internal" href="../../user-guide/configuration.html#checking-partitioning"><span class="std std-ref">Checking what the plan actually does</span></a>.</p>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span><span class="w"> </span><span class="nn">pyarrow</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pa</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">datafusion</span><span class="w"> </span><span class="kn">import</span> <span class="n">SessionConfig</span><span class="p">,</span> <span class="n">SessionContext</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">ctx</span> <span class="o">=</span> <span class="n">SessionContext</span><span class="p">(</span><span class="n">SessionConfig</span><span class="p">()</span><span class="o">.</span><span class="n">with_target_partitions</span><span class="p">(</span><span class="mi">4</span><span class="p">))</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">ctx</span><span class="o">.</span><span class="n">register_record_batches</span><span class="p">(</span><span class="s2">&quot;t&quot;</span><span class="p">,</span> <span class="p">[</span>
+<span class="gp">... </span>    <span class="p">[</span><span class="n">pa</span><span class="o">.</span><span class="n">record_batch</span><span class="p">({</span><span class="s2">&quot;a&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">]})],</span>
+<span class="gp">... </span>    <span class="p">[</span><span class="n">pa</span><span class="o">.</span><span class="n">record_batch</span><span class="p">({</span><span class="s2">&quot;a&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">6</span><span class="p">]})],</span>
+<span class="gp">... </span><span class="p">])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">ctx</span><span class="o">.</span><span class="n">sql</span><span class="p">(</span><span class="s2">&quot;select a from t&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">execution_plan</span><span class="p">()</span><span class="o">.</span><span class="n">output_partitioning</span>
+<span class="go">UnknownPartitioning(2)</span>
+</pre></div>
+</div>
+<p>A group-by redistributes rows, so the plan reports the keys:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">grouped</span> <span class="o">=</span> <span class="n">ctx</span><span class="o">.</span><span class="n">sql</span><span class="p">(</span><span class="s2">&quot;select a, count(*) from t group by a&quot;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">partitioning</span> <span class="o">=</span> <span class="n">grouped</span><span class="o">.</span><span class="n">execution_plan</span><span class="p">()</span><span class="o">.</span><span class="n">output_partitioning</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">partitioning</span><span class="o">.</span><span class="n">scheme</span>
+<span class="go">&#39;Hash&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">partitioning</span><span class="o">.</span><span class="n">partition_count</span>
+<span class="go">4</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py property">
 <dt class="sig sig-object py" id="datafusion.ExecutionPlan.partition_count">
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">partition_count</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span></em><a class="headerlink" href="#datafusion.ExecutionPlan.partition_count" title="Link to this definition">#</a></dt>
 <dd><p>Returns the number of partitions in the physical plan.</p>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">datafusion</span><span class="w"> </span><span class="kn">import</span> <span class="n">SessionContext</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">ctx</span> <span class="o">=</span> <span class="n">SessionContext</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">df</span> <span class="o">=</span> <span class="n">ctx</span><span class="o">.</span><span class="n">from_pydict</span><span class="p">({</span><span class="s2">&quot;a&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">]})</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">df</span><span class="o">.</span><span class="n">execution_plan</span><span class="p">()</span><span class="o">.</span><span class="n">partition_count</span>
+<span class="go">1</span>
+</pre></div>
+</div>
 </dd></dl>
 
 </dd></dl>
@@ -1235,6 +1335,12 @@ Sender and receiver must run the same Python
 portable across minor versions. See <a class="reference internal" href="#datafusion.Expr.to_bytes" title="datafusion.Expr.to_bytes"><code class="xref py py-meth docutils literal notranslate"><span class="pre">to_bytes()</span></code></a> for
 details on what travels by value vs. by reference.</p>
 </div>
+<p>The encoding side honors a driver-side sender context installed
+via <a class="reference internal" href="ipc/index.html#datafusion.ipc.set_sender_ctx" title="datafusion.ipc.set_sender_ctx"><code class="xref py py-func docutils literal notranslate"><span class="pre">datafusion.ipc.set_sender_ctx()</span></code></a> — that is how
+<code class="xref py py-meth docutils literal notranslate"><span class="pre">SessionContext.with_python_udf_inlining()</span></code> propagates
+through <code class="docutils literal notranslate"><span class="pre">pickle.dumps</span></code>. The sender context is read by
+<code class="docutils literal notranslate"><span class="pre">__reduce__</span></code>, so <code class="xref py py-func docutils literal notranslate"><span class="pre">copy.copy()</span></code> and <code class="xref py py-func docutils literal notranslate"><span class="pre">copy.deepcopy()</span></code>
+— which also go through <code class="docutils literal notranslate"><span class="pre">__reduce__</span></code> — pick it up too.</p>
 <p class="rubric">Examples</p>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span><span class="w"> </span><span class="nn">pickle</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">datafusion</span><span class="w"> </span><span class="kn">import</span> <span class="n">col</span><span class="p">,</span> <span class="n">lit</span>
@@ -1243,12 +1349,6 @@ details on what travels by value vs. by reference.</p>
 <span class="go">&#39;a * Int64(2)&#39;</span>
 </pre></div>
 </div>
-<p>The encoding side honors a driver-side sender context installed
-via <a class="reference internal" href="ipc/index.html#datafusion.ipc.set_sender_ctx" title="datafusion.ipc.set_sender_ctx"><code class="xref py py-func docutils literal notranslate"><span class="pre">datafusion.ipc.set_sender_ctx()</span></code></a> — that is how
-<code class="xref py py-meth docutils literal notranslate"><span class="pre">SessionContext.with_python_udf_inlining()</span></code> propagates
-through <code class="docutils literal notranslate"><span class="pre">pickle.dumps</span></code>. The sender context is read by
-<code class="docutils literal notranslate"><span class="pre">__reduce__</span></code>, so <code class="xref py py-func docutils literal notranslate"><span class="pre">copy.copy()</span></code> and <code class="xref py py-func docutils literal notranslate"><span class="pre">copy.deepcopy()</span></code>
-— which also go through <code class="docutils literal notranslate"><span class="pre">__reduce__</span></code> — pick it up too.</p>
 </dd></dl>
 
 <dl class="py method">
@@ -1533,8 +1633,9 @@ through <code class="docutils literal notranslate"><span class="pre">pickle.dump
 <span class="sig-name descname"><span class="pre">distinct</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">ExprFuncBuilder</span></span></span><a class="headerlink" href="#datafusion.Expr.distinct" title="Link to this definition">#</a></dt>
 <dd><p>Only evaluate distinct values for an aggregate function.</p>
 <p>This function will create an <code class="xref py py-class docutils literal notranslate"><span class="pre">ExprFuncBuilder</span></code> that can be used to
-set parameters for either window or aggregate functions. If used on any other
-type of expression, an error will be generated when <code class="docutils literal notranslate"><span class="pre">build()</span></code> is called.</p>
+set parameters for either window or aggregate functions. It raises on a window
+function unless that is an aggregate used as one. If used on any other type of
+expression, an error will be generated when <code class="docutils literal notranslate"><span class="pre">build()</span></code> is called.</p>
 </dd></dl>
 
 <dl class="py method">
@@ -1572,8 +1673,9 @@ type of expression, an error will be generated when <code class="docutils litera
 <span class="sig-name descname"><span class="pre">filter</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filter</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#datafusion.Expr" title="datafusion.Expr"><span class="pre">Expr</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">ExprFuncBuilder</span></span></span><a class="headerlink" href="#datafusion.Expr.filter" title="Link to this definition">#</a></dt>
 <dd><p>Filter an aggregate function.</p>
 <p>This function will create an <code class="xref py py-class docutils literal notranslate"><span class="pre">ExprFuncBuilder</span></code> that can be used to
-set parameters for either window or aggregate functions. If used on any other
-type of expression, an error will be generated when <code class="docutils literal notranslate"><span class="pre">build()</span></code> is called.</p>
+set parameters for either window or aggregate functions. It raises on a window
+function unless that is an aggregate used as one. If used on any other type of
+expression, an error will be generated when <code class="docutils literal notranslate"><span class="pre">build()</span></code> is called.</p>
 </dd></dl>
 
 <dl class="py method">
@@ -1602,6 +1704,12 @@ Python UDFs sent with inlining disabled via
 context is installed, the global <code class="xref py py-class docutils literal notranslate"><span class="pre">SessionContext</span></code> is used
 (sufficient for built-ins and Python UDFs, plus any UDFs
 registered on the global context).</p>
+<p>Note that the global context carries no extension codecs, so
+falling back to it cannot decode a payload written by one. A
+worker that must decode extension-codec payloads has to install a
+context carrying those codecs — see
+<a class="reference internal" href="ipc/index.html#datafusion.ipc.set_worker_ctx" title="datafusion.ipc.set_worker_ctx"><code class="xref py py-func docutils literal notranslate"><span class="pre">datafusion.ipc.set_worker_ctx()</span></code></a> and
+<code class="xref py py-meth docutils literal notranslate"><span class="pre">SessionContext.with_extensions()</span></code>.</p>
 <div class="admonition warning">
 <p class="admonition-title">Warning</p>
 <p>Security
@@ -1642,6 +1750,12 @@ by-value vs. by-reference details.</p>
 <dd><p>Set the initial letter of each word to capital.</p>
 <p>Converts the first letter of each word in <code class="docutils literal notranslate"><span class="pre">string</span></code> to uppercase and the
 remaining characters to lowercase.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="datafusion.Expr.is_nan">
+<span class="sig-name descname"><span class="pre">is_nan</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#datafusion.Expr" title="datafusion.Expr"><span class="pre">Expr</span></a></span></span><a class="headerlink" href="#datafusion.Expr.is_nan" title="Link to this definition">#</a></dt>
+<dd><p>Returns true if a given number is +NaN or -NaN otherwise returns false.</p>
 </dd></dl>
 
 <dl class="py method">
@@ -1786,10 +1900,15 @@ type of expression, an error will be generated when <code class="docutils litera
 <dl class="py method">
 <dt class="sig sig-object py" id="datafusion.Expr.over">
 <span class="sig-name descname"><span class="pre">over</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">window</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="expr/index.html#datafusion.expr.Window" title="datafusion.expr.Window"><span class="pre">Window</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#datafusion.Expr" title="datafusion.Expr"><span class="pre">Expr</span></a></span></span><a class="headerlink" href="#datafusion.Expr.over" title="Link to this definition">#</a></dt>
-<dd><p>Turn an aggregate function into a window function.</p>
-<p>This function turns any aggregate function into a window function. With the
+<dd><p>Evaluate an aggregate or window function over a window.</p>
+<p>On an aggregate function this turns it into a window function. With the
 exception of <code class="docutils literal notranslate"><span class="pre">partition_by</span></code>, how each of the parameters is used is determined
 by the underlying aggregate function.</p>
+<p>On an aggregate, the <code class="docutils literal notranslate"><span class="pre">null_treatment</span></code>, <code class="docutils literal notranslate"><span class="pre">filter</span></code>, and <code class="docutils literal notranslate"><span class="pre">distinct</span></code> options
+it was built with are kept, and an <code class="docutils literal notranslate"><span class="pre">order_by</span></code> raises; see
+<a class="reference internal" href="../../user-guide/common-operations/windows.html#aggregate-over-options"><span class="std std-ref">Options set on the aggregate</span></a>.</p>
+<p>On a window function that already has a <code class="docutils literal notranslate"><span class="pre">partition_by</span></code>, <code class="docutils literal notranslate"><span class="pre">order_by</span></code>, or
+<code class="docutils literal notranslate"><span class="pre">window_frame</span></code>, this raises; see <a class="reference internal" href="../../user-guide/common-operations/windows.html#window-function-chaining"><span class="std std-ref">Chaining onto a window function</span></a>.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><p><strong>window</strong> – Window definition</p>
@@ -1802,8 +1921,10 @@ by the underlying aggregate function.</p>
 <span class="sig-name descname"><span class="pre">partition_by</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">partition_by</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#datafusion.Expr" title="datafusion.Expr"><span class="pre">Expr</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">ExprFuncBuilder</span></span></span><a class="headerlink" href="#datafusion.Expr.partition_by" title="Link to this definition">#</a></dt>
 <dd><p>Set the partitioning for a window function.</p>
 <p>This function will create an <code class="xref py py-class docutils literal notranslate"><span class="pre">ExprFuncBuilder</span></code> that can be used to
-set parameters for either window or aggregate functions. If used on any other
-type of expression, an error will be generated when <code class="docutils literal notranslate"><span class="pre">build()</span></code> is called.</p>
+set parameters for either window or aggregate functions. It raises on an
+aggregate function that has not been turned into a window function with
+<a class="reference internal" href="#datafusion.Expr.over" title="datafusion.Expr.over"><code class="xref py py-meth docutils literal notranslate"><span class="pre">over()</span></code></a>. If used on any other type of expression, an error will be
+generated when <code class="docutils literal notranslate"><span class="pre">build()</span></code> is called.</p>
 </dd></dl>
 
 <dl class="py method">
@@ -1912,7 +2033,7 @@ row as one of the possible valid <code class="docutils literal notranslate"><spa
 
 <dl class="py method">
 <dt class="sig sig-object py" id="datafusion.Expr.sort">
-<span class="sig-name descname"><span class="pre">sort</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ascending</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nulls_first</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="expr/index.html#datafusion.expr.SortExpr" title="datafusion.expr.SortExpr"><span class="pre">SortExpr</span></a></span></span><a class="headerlink" href="#datafusion.Expr.sort" title="Link to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">sort</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ascending</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nulls_first</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="expr/index.html#datafusion.expr.SortExpr" title="datafusion.expr.SortExpr"><span class="pre">SortExpr</span></a></span></span><a class="headerlink" href="#datafusion.Expr.sort" title="Link to this definition">#</a></dt>
 <dd><p>Creates a sort <a class="reference internal" href="#datafusion.Expr" title="datafusion.Expr"><code class="xref py py-class docutils literal notranslate"><span class="pre">Expr</span></code></a> from an existing <a class="reference internal" href="#datafusion.Expr" title="datafusion.Expr"><code class="xref py py-class docutils literal notranslate"><span class="pre">Expr</span></code></a>.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -2094,10 +2215,12 @@ SqlType Enum which this expression represents.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="datafusion.Expr.window_frame">
 <span class="sig-name descname"><span class="pre">window_frame</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">window_frame</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#datafusion.WindowFrame" title="datafusion.WindowFrame"><span class="pre">WindowFrame</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">ExprFuncBuilder</span></span></span><a class="headerlink" href="#datafusion.Expr.window_frame" title="Link to this definition">#</a></dt>
-<dd><p>Set the frame fora  window function.</p>
+<dd><p>Set the frame for a window function.</p>
 <p>This function will create an <code class="xref py py-class docutils literal notranslate"><span class="pre">ExprFuncBuilder</span></code> that can be used to
-set parameters for either window or aggregate functions. If used on any other
-type of expression, an error will be generated when <code class="docutils literal notranslate"><span class="pre">build()</span></code> is called.</p>
+set parameters for either window or aggregate functions. It raises on an
+aggregate function that has not been turned into a window function with
+<a class="reference internal" href="#datafusion.Expr.over" title="datafusion.Expr.over"><code class="xref py py-meth docutils literal notranslate"><span class="pre">over()</span></code></a>. If used on any other type of expression, an error will be
+generated when <code class="docutils literal notranslate"><span class="pre">build()</span></code> is called.</p>
 </dd></dl>
 
 <dl class="py attribute">
@@ -2189,7 +2312,7 @@ or programmatically (for example custom query languages).</p>
 <p>This constructor should not be called by the end user.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="datafusion.LogicalPlan.__eq__">
-<span class="sig-name descname"><span class="pre">__eq__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">other</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#datafusion.LogicalPlan" title="datafusion.LogicalPlan"><span class="pre">LogicalPlan</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bool</span></span></span><a class="headerlink" href="#datafusion.LogicalPlan.__eq__" title="Link to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">__eq__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">other</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">object</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bool</span></span></span><a class="headerlink" href="#datafusion.LogicalPlan.__eq__" title="Link to this definition">#</a></dt>
 <dd><p>Test equality.</p>
 </dd></dl>
 
@@ -2209,9 +2332,9 @@ or programmatically (for example custom query languages).</p>
 <dt class="sig sig-object py" id="datafusion.LogicalPlan.display_graphviz">
 <span class="sig-name descname"><span class="pre">display_graphviz</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span></span></span><a class="headerlink" href="#datafusion.LogicalPlan.display_graphviz" title="Link to this definition">#</a></dt>
 <dd><p>Print the graph visualization of the logical plan.</p>
-<p>Returns a <cite>format`able structure that produces lines meant for graphical display
-using the `DOT</cite> language. This format can be visualized using software from
-[<cite>graphviz</cite>](<a class="reference external" href="https://graphviz.org/">https://graphviz.org/</a>)</p>
+<p>Returns a formattable structure that produces lines meant for graphical
+display using the <code class="docutils literal notranslate"><span class="pre">DOT</span></code> language. This format can be visualized using
+software from <a class="reference external" href="https://graphviz.org/">graphviz</a>.</p>
 </dd></dl>
 
 <dl class="py method">
@@ -2230,9 +2353,17 @@ using the `DOT</cite> language. This format can be visualized using software fro
 <dt class="sig sig-object py" id="datafusion.LogicalPlan.from_bytes">
 <em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">from_bytes</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ctx</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="context/index.html#datafusion.context.SessionContext" title="datafusion.context.SessionContext"><span class="pre">datafusion.context.SessionContext</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">data</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bytes</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#datafusion.LogicalPlan" title="datafusion.LogicalPlan"><span class="pre">LogicalPlan</span></a></span></span><a class="headerlink" href="#datafusion.LogicalPlan.from_bytes" title="Link to this definition">#</a></dt>
 <dd><p>Create a LogicalPlan from serialized protobuf bytes.</p>
-<p>Decoding routes through the session’s installed
-<cite>LogicalExtensionCodec</cite>. Tables created in memory from record
-batches are currently not supported.</p>
+<p>Decoding routes through the codecs installed on <code class="docutils literal notranslate"><span class="pre">ctx</span></code> with
+<code class="xref py py-meth docutils literal notranslate"><span class="pre">with_logical_extension_codec()</span></code>.
+Tables created in memory from record batches are currently not
+supported.</p>
+<p>Unlike <a class="reference internal" href="#datafusion.Expr.from_bytes" title="datafusion.Expr.from_bytes"><code class="xref py py-meth docutils literal notranslate"><span class="pre">datafusion.Expr.from_bytes()</span></code></a>, <code class="docutils literal notranslate"><span class="pre">ctx</span></code> is required and
+positional, and there is no fallback to a worker or global context.</p>
+<div class="admonition seealso">
+<p class="admonition-title">See also</p>
+<p><a class="reference internal" href="#datafusion.LogicalPlan.to_bytes" title="datafusion.LogicalPlan.to_bytes"><code class="xref py py-meth docutils literal notranslate"><span class="pre">to_bytes()</span></code></a>, <a class="reference internal" href="#datafusion.ExecutionPlan.from_bytes" title="datafusion.ExecutionPlan.from_bytes"><code class="xref py py-meth docutils literal notranslate"><span class="pre">ExecutionPlan.from_bytes()</span></code></a>,
+<a class="reference internal" href="#datafusion.Expr.from_bytes" title="datafusion.Expr.from_bytes"><code class="xref py py-meth docutils literal notranslate"><span class="pre">datafusion.Expr.from_bytes()</span></code></a>.</p>
+</div>
 </dd></dl>
 
 <dl class="py method">
@@ -2251,12 +2382,17 @@ batches are currently not supported.</p>
 <dt class="sig sig-object py" id="datafusion.LogicalPlan.to_bytes">
 <span class="sig-name descname"><span class="pre">to_bytes</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ctx</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="context/index.html#datafusion.context.SessionContext" title="datafusion.context.SessionContext"><span class="pre">datafusion.context.SessionContext</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bytes</span></span></span><a class="headerlink" href="#datafusion.LogicalPlan.to_bytes" title="Link to this definition">#</a></dt>
 <dd><p>Convert a LogicalPlan to serialized protobuf bytes.</p>
-<p>When <code class="docutils literal notranslate"><span class="pre">ctx</span></code> is supplied, encoding routes through the session’s
-installed <cite>LogicalExtensionCodec</cite> so user FFI codecs (registered
-via <code class="xref py py-meth docutils literal notranslate"><span class="pre">SessionContext.with_logical_extension_codec()</span></code>) see
-the encode path. With <code class="docutils literal notranslate"><span class="pre">ctx=None</span></code> a default codec is used.
-Tables created in memory from record batches are currently not
-supported.</p>
+<p>When <code class="docutils literal notranslate"><span class="pre">ctx</span></code> is supplied, encoding routes through the codecs
+installed on it with
+<code class="xref py py-meth docutils literal notranslate"><span class="pre">with_logical_extension_codec()</span></code>,
+so extension codecs see the encode path. With <code class="docutils literal notranslate"><span class="pre">ctx=None</span></code> a
+default codec is used. Tables created in memory from record
+batches are currently not supported.</p>
+<div class="admonition seealso">
+<p class="admonition-title">See also</p>
+<p><a class="reference internal" href="#datafusion.LogicalPlan.from_bytes" title="datafusion.LogicalPlan.from_bytes"><code class="xref py py-meth docutils literal notranslate"><span class="pre">from_bytes()</span></code></a>, <a class="reference internal" href="#datafusion.ExecutionPlan.to_bytes" title="datafusion.ExecutionPlan.to_bytes"><code class="xref py py-meth docutils literal notranslate"><span class="pre">ExecutionPlan.to_bytes()</span></code></a>,
+<a class="reference internal" href="#datafusion.Expr.to_bytes" title="datafusion.Expr.to_bytes"><code class="xref py py-meth docutils literal notranslate"><span class="pre">datafusion.Expr.to_bytes()</span></code></a>.</p>
+</div>
 </dd></dl>
 
 <dl class="py method">
@@ -2667,6 +2803,137 @@ here.</p></li>
 </dd></dl>
 
 <dl class="py class">
+<dt class="sig sig-object py" id="datafusion.PhysicalPartitioning">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">datafusion.</span></span><span class="sig-name descname"><span class="pre">PhysicalPartitioning</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">partitioning</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">datafusion._internal.PhysicalPartitioning</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.PhysicalPartitioning" title="Link to this definition">#</a></dt>
+<dd><p>How a physical plan’s output rows are spread across its partitions.</p>
+<p>Returned by <a class="reference internal" href="#datafusion.ExecutionPlan.output_partitioning" title="datafusion.ExecutionPlan.output_partitioning"><code class="xref py py-attr docutils literal notranslate"><span class="pre">ExecutionPlan.output_partitioning</span></code></a>. This is the
+partitioning a built plan <em>has</em>. Distinct from
+<a class="reference internal" href="expr/index.html#datafusion.expr.Partitioning" title="datafusion.expr.Partitioning"><code class="xref py py-class docutils literal notranslate"><span class="pre">datafusion.expr.Partitioning</span></code></a>, the <em>logical</em> partitioning a
+<code class="docutils literal notranslate"><span class="pre">Repartition</span></code> node records and hands back from
+<code class="docutils literal notranslate"><span class="pre">partitioning_scheme()</span></code> — a request, which the plan need not honour. See
+<a class="reference internal" href="../../user-guide/configuration.html#checking-partitioning"><span class="std std-ref">Checking what the plan actually does</span></a>.</p>
+<p>This constructor should not be called by the end user.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="datafusion.PhysicalPartitioning.__eq__">
+<span class="sig-name descname"><span class="pre">__eq__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">other</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">object</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bool</span></span></span><a class="headerlink" href="#datafusion.PhysicalPartitioning.__eq__" title="Link to this definition">#</a></dt>
+<dd><p>Compare two partitionings by scheme, count and hash expressions.</p>
+<p>Equality is structural, and does not mirror DataFusion’s own
+comparison of the underlying type, under which two
+<code class="docutils literal notranslate"><span class="pre">UnknownPartitioning</span></code> values of the same width are unequal.</p>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">datafusion</span><span class="w"> </span><span class="kn">import</span> <span class="n">SessionContext</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">ctx</span> <span class="o">=</span> <span class="n">SessionContext</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">a</span> <span class="o">=</span> <span class="n">ctx</span><span class="o">.</span><span class="n">from_pydict</span><span class="p">({</span><span class="s2">&quot;a&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">]})</span><span class="o">.</span><span class="n">execution_plan</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">b</span> <span class="o">=</span> <span class="n">ctx</span><span class="o">.</span><span class="n">from_pydict</span><span class="p">({</span><span class="s2">&quot;b&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">6</span><span class="p">]})</span><span class="o">.</span><span class="n">execution_plan</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">a</span><span class="o">.</span><span class="n">output_partitioning</span> <span class="o">==</span> <span class="n">b</span><span class="o">.</span><span class="n">output_partitioning</span>
+<span class="go">True</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">a</span><span class="o">.</span><span class="n">output_partitioning</span> <span class="o">==</span> <span class="s2">&quot;UnknownPartitioning(1)&quot;</span>
+<span class="go">False</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="datafusion.PhysicalPartitioning.__hash__">
+<span class="sig-name descname"><span class="pre">__hash__</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">int</span></span></span><a class="headerlink" href="#datafusion.PhysicalPartitioning.__hash__" title="Link to this definition">#</a></dt>
+<dd><p>Hash the partitioning, consistently with <a class="reference internal" href="#datafusion.PhysicalPartitioning.__eq__" title="datafusion.PhysicalPartitioning.__eq__"><code class="xref py py-meth docutils literal notranslate"><span class="pre">__eq__()</span></code></a>.</p>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">datafusion</span><span class="w"> </span><span class="kn">import</span> <span class="n">SessionContext</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">ctx</span> <span class="o">=</span> <span class="n">SessionContext</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">a</span> <span class="o">=</span> <span class="n">ctx</span><span class="o">.</span><span class="n">from_pydict</span><span class="p">({</span><span class="s2">&quot;a&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">]})</span><span class="o">.</span><span class="n">execution_plan</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">b</span> <span class="o">=</span> <span class="n">ctx</span><span class="o">.</span><span class="n">from_pydict</span><span class="p">({</span><span class="s2">&quot;b&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">6</span><span class="p">]})</span><span class="o">.</span><span class="n">execution_plan</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">len</span><span class="p">({</span><span class="n">a</span><span class="o">.</span><span class="n">output_partitioning</span><span class="p">,</span> <span class="n">b</span><span class="o">.</span><span class="n">output_partitioning</span><span class="p">})</span>
+<span class="go">1</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="datafusion.PhysicalPartitioning.__repr__">
+<span class="sig-name descname"><span class="pre">__repr__</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span></span></span><a class="headerlink" href="#datafusion.PhysicalPartitioning.__repr__" title="Link to this definition">#</a></dt>
+<dd><p>Print a string representation of the partitioning.</p>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">datafusion</span><span class="w"> </span><span class="kn">import</span> <span class="n">SessionContext</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">ctx</span> <span class="o">=</span> <span class="n">SessionContext</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">df</span> <span class="o">=</span> <span class="n">ctx</span><span class="o">.</span><span class="n">from_pydict</span><span class="p">({</span><span class="s2">&quot;a&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">]})</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">repr</span><span class="p">(</span><span class="n">df</span><span class="o">.</span><span class="n">execution_plan</span><span class="p">()</span><span class="o">.</span><span class="n">output_partitioning</span><span class="p">)</span>
+<span class="go">&#39;UnknownPartitioning(1)&#39;</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="datafusion.PhysicalPartitioning._key">
+<span class="sig-name descname"><span class="pre">_key</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Ellipsis</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#datafusion.PhysicalPartitioning._key" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="datafusion.PhysicalPartitioning._raw_partitioning">
+<span class="sig-name descname"><span class="pre">_raw_partitioning</span></span><a class="headerlink" href="#datafusion.PhysicalPartitioning._raw_partitioning" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="datafusion.PhysicalPartitioning.hash_expressions">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">hash_expressions</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#datafusion.PhysicalPartitioning.hash_expressions" title="Link to this definition">#</a></dt>
+<dd><p>The expressions rows are hashed on, or <code class="docutils literal notranslate"><span class="pre">None</span></code> for other schemes.</p>
+<p>Physical expressions have no Python representation, so these are
+returned in their displayed form. <code class="docutils literal notranslate"><span class="pre">None</span></code> covers <code class="docutils literal notranslate"><span class="pre">&quot;Range&quot;</span></code> as well,
+whose ordering and split points this class does not expose.</p>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span><span class="w"> </span><span class="nn">pyarrow</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pa</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">datafusion</span><span class="w"> </span><span class="kn">import</span> <span class="n">SessionConfig</span><span class="p">,</span> <span class="n">SessionContext</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">ctx</span> <span class="o">=</span> <span class="n">SessionContext</span><span class="p">(</span><span class="n">SessionConfig</span><span class="p">()</span><span class="o">.</span><span class="n">with_target_partitions</span><span class="p">(</span><span class="mi">4</span><span class="p">))</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">ctx</span><span class="o">.</span><span class="n">register_record_batches</span><span class="p">(</span><span class="s2">&quot;t&quot;</span><span class="p">,</span> <span class="p">[</span>
+<span class="gp">... </span>    <span class="p">[</span><span class="n">pa</span><span class="o">.</span><span class="n">record_batch</span><span class="p">({</span><span class="s2">&quot;a&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">]})],</span>
+<span class="gp">... </span>    <span class="p">[</span><span class="n">pa</span><span class="o">.</span><span class="n">record_batch</span><span class="p">({</span><span class="s2">&quot;a&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">6</span><span class="p">]})],</span>
+<span class="gp">... </span><span class="p">])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">scan</span> <span class="o">=</span> <span class="n">ctx</span><span class="o">.</span><span class="n">sql</span><span class="p">(</span><span class="s2">&quot;select a from t&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">execution_plan</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">scan</span><span class="o">.</span><span class="n">output_partitioning</span><span class="o">.</span><span class="n">hash_expressions</span> <span class="ow">is</span> <span class="kc">None</span>
+<span class="go">True</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">grouped</span> <span class="o">=</span> <span class="n">ctx</span><span class="o">.</span><span class="n">sql</span><span class="p">(</span><span class="s2">&quot;select a, count(*) from t group by a&quot;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">grouped</span><span class="o">.</span><span class="n">execution_plan</span><span class="p">()</span><span class="o">.</span><span class="n">output_partitioning</span><span class="o">.</span><span class="n">hash_expressions</span>
+<span class="go">[&#39;a@0&#39;]</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="datafusion.PhysicalPartitioning.partition_count">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">partition_count</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span></em><a class="headerlink" href="#datafusion.PhysicalPartitioning.partition_count" title="Link to this definition">#</a></dt>
+<dd><p>The number of partitions.</p>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">datafusion</span><span class="w"> </span><span class="kn">import</span> <span class="n">SessionContext</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">ctx</span> <span class="o">=</span> <span class="n">SessionContext</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">df</span> <span class="o">=</span> <span class="n">ctx</span><span class="o">.</span><span class="n">from_pydict</span><span class="p">({</span><span class="s2">&quot;a&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">]})</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">df</span><span class="o">.</span><span class="n">execution_plan</span><span class="p">()</span><span class="o">.</span><span class="n">output_partitioning</span><span class="o">.</span><span class="n">partition_count</span>
+<span class="go">1</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="datafusion.PhysicalPartitioning.scheme">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">scheme</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Literal</span><span class="p"><span class="pre">[</span></span><span class="s"><span class="pre">'RoundRobinBatch'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'Hash'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'Range'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'UnknownPartitioning'</span></span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#datafusion.PhysicalPartitioning.scheme" title="Link to this definition">#</a></dt>
+<dd><p>Which partitioning scheme this is.</p>
+<p><code class="docutils literal notranslate"><span class="pre">&quot;UnknownPartitioning&quot;</span></code> means the plan knows how many partitions it
+has but nothing about how rows are distributed between them, which is
+the usual case for a file scan. <code class="docutils literal notranslate"><span class="pre">&quot;RoundRobinBatch&quot;</span></code> and <code class="docutils literal notranslate"><span class="pre">&quot;Hash&quot;</span></code>
+come from a repartition the optimizer inserted. <code class="docutils literal notranslate"><span class="pre">&quot;Range&quot;</span></code> only
+appears on a plan this package did not build; see
+<a class="reference internal" href="../../user-guide/configuration.html#checking-partitioning"><span class="std std-ref">Checking what the plan actually does</span></a>.</p>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">datafusion</span><span class="w"> </span><span class="kn">import</span> <span class="n">SessionContext</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">ctx</span> <span class="o">=</span> <span class="n">SessionContext</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">df</span> <span class="o">=</span> <span class="n">ctx</span><span class="o">.</span><span class="n">from_pydict</span><span class="p">({</span><span class="s2">&quot;a&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">]})</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">df</span><span class="o">.</span><span class="n">execution_plan</span><span class="p">()</span><span class="o">.</span><span class="n">output_partitioning</span><span class="o">.</span><span class="n">scheme</span>
+<span class="go">&#39;UnknownPartitioning&#39;</span>
+</pre></div>
+</div>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
 <dt class="sig sig-object py" id="datafusion.RecordBatch">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">datafusion.</span></span><span class="sig-name descname"><span class="pre">RecordBatch</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">record_batch</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">datafusion._internal.RecordBatch</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.RecordBatch" title="Link to this definition">#</a></dt>
 <dd><p>This class is essentially a wrapper for <code class="xref py py-class docutils literal notranslate"><span class="pre">pa.RecordBatch</span></code>.</p>
@@ -2958,23 +3225,69 @@ multiple spillable operators that all will spill.</p>
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">datafusion.</span></span><span class="sig-name descname"><span class="pre">SessionConfig</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">config_options</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.SessionConfig" title="Link to this definition">#</a></dt>
 <dd><p>Session configuration options.</p>
 <p>Create a new <a class="reference internal" href="#datafusion.SessionConfig" title="datafusion.SessionConfig"><code class="xref py py-class docutils literal notranslate"><span class="pre">SessionConfig</span></code></a> with the given configuration options.</p>
+<p>Each entry is applied as though passed to <a class="reference internal" href="#datafusion.SessionConfig.set" title="datafusion.SessionConfig.set"><code class="xref py py-meth docutils literal notranslate"><span class="pre">set()</span></code></a>, so the same
+keys are rejected. See <a class="reference internal" href="../../user-guide/configuration.html#configuration"><span class="std std-ref">Configuration</span></a>.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>config_options</strong> – Configuration options.</p>
+<dd class="field-odd"><p><strong>config_options</strong> – Options to apply, keyed by fully qualified name.</p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>ValueError</strong> – If a key names no known option, or a value does not
+parse as that option’s declared type. Which of several bad
+entries is reported is not defined.</p>
 </dd>
 </dl>
+<p>Example usage:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">datafusion</span><span class="w"> </span><span class="kn">import</span> <span class="n">SessionConfig</span><span class="p">,</span> <span class="n">SessionContext</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">ctx</span> <span class="o">=</span> <span class="n">SessionContext</span><span class="p">(</span><span class="n">SessionConfig</span><span class="p">())</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">config</span> <span class="o">=</span> <span class="n">SessionConfig</span><span class="p">(</span>
+<span class="gp">... </span>    <span class="n">config_options</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;datafusion.execution.batch_size&quot;</span><span class="p">:</span> <span class="s2">&quot;1024&quot;</span><span class="p">}</span>
+<span class="gp">... </span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">ctx</span> <span class="o">=</span> <span class="n">SessionContext</span><span class="p">(</span><span class="n">config</span><span class="o">.</span><span class="n">with_information_schema</span><span class="p">(</span><span class="kc">True</span><span class="p">))</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">ctx</span><span class="o">.</span><span class="n">sql</span><span class="p">(</span>
+<span class="gp">... </span>    <span class="s2">&quot;select value from information_schema.df_settings&quot;</span>
+<span class="gp">... </span>    <span class="s2">&quot; where name = &#39;datafusion.execution.batch_size&#39;&quot;</span>
+<span class="gp">... </span><span class="p">)</span><span class="o">.</span><span class="n">collect</span><span class="p">()[</span><span class="mi">0</span><span class="p">][</span><span class="s2">&quot;value&quot;</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+<span class="go">&lt;pyarrow.StringScalar: &#39;1024&#39;&gt;</span>
+</pre></div>
+</div>
 <dl class="py method">
 <dt class="sig sig-object py" id="datafusion.SessionConfig.set">
 <span class="sig-name descname"><span class="pre">set</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">key</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">value</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#datafusion.SessionConfig" title="datafusion.SessionConfig"><span class="pre">SessionConfig</span></a></span></span><a class="headerlink" href="#datafusion.SessionConfig.set" title="Link to this definition">#</a></dt>
-<dd><p>Set a configuration option.</p>
-<p>Args:
-key: Option key.
-value: Option value.</p>
+<dd><p>Set a configuration option by its fully qualified key.</p>
+<p>Not every key that <code class="docutils literal notranslate"><span class="pre">information_schema.df_settings</span></code> lists can be set
+here: the <code class="docutils literal notranslate"><span class="pre">datafusion.runtime.*</span></code> entries come from the runtime
+environment rather than from the session config. See
+<a class="reference internal" href="../../user-guide/configuration.html#configuration"><span class="std std-ref">Configuration</span></a>.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Returns<span class="colon">:</span></dt>
-<dd class="field-odd"><p>A new <a class="reference internal" href="#datafusion.SessionConfig" title="datafusion.SessionConfig"><code class="xref py py-class docutils literal notranslate"><span class="pre">SessionConfig</span></code></a> object with the updated setting.</p>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>key</strong> – Option key including its namespace, such as
+<code class="docutils literal notranslate"><span class="pre">datafusion.execution.batch_size</span></code>.</p></li>
+<li><p><strong>value</strong> – Option value as a string, parsed according to the type the
+option declares.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>This <a class="reference internal" href="#datafusion.SessionConfig" title="datafusion.SessionConfig"><code class="xref py py-class docutils literal notranslate"><span class="pre">SessionConfig</span></code></a>, modified in place, so that calls
+chain.</p>
+</dd>
+<dt class="field-odd">Raises<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>ValueError</strong> – If <code class="docutils literal notranslate"><span class="pre">key</span></code> names no known option, or if <code class="docutils literal notranslate"><span class="pre">value</span></code> does
+not parse as that option’s declared type.</p>
 </dd>
 </dl>
+<p>Example usage:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">datafusion</span><span class="w"> </span><span class="kn">import</span> <span class="n">SessionConfig</span><span class="p">,</span> <span class="n">SessionContext</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">config</span> <span class="o">=</span> <span class="n">SessionConfig</span><span class="p">()</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s2">&quot;datafusion.execution.batch_size&quot;</span><span class="p">,</span> <span class="s2">&quot;1024&quot;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">ctx</span> <span class="o">=</span> <span class="n">SessionContext</span><span class="p">(</span><span class="n">config</span><span class="o">.</span><span class="n">with_information_schema</span><span class="p">(</span><span class="kc">True</span><span class="p">))</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">ctx</span><span class="o">.</span><span class="n">sql</span><span class="p">(</span>
+<span class="gp">... </span>    <span class="s2">&quot;select value from information_schema.df_settings&quot;</span>
+<span class="gp">... </span>    <span class="s2">&quot; where name = &#39;datafusion.execution.batch_size&#39;&quot;</span>
+<span class="gp">... </span><span class="p">)</span><span class="o">.</span><span class="n">collect</span><span class="p">()[</span><span class="mi">0</span><span class="p">][</span><span class="s2">&quot;value&quot;</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+<span class="go">&lt;pyarrow.StringScalar: &#39;1024&#39;&gt;</span>
+</pre></div>
+</div>
 </dd></dl>
 
 <dl class="py method">
@@ -3587,6 +3900,7 @@ file.</p></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.ExecutionPlan.to_bytes"><code class="docutils literal notranslate"><span class="pre">ExecutionPlan.to_bytes()</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.ExecutionPlan.to_proto"><code class="docutils literal notranslate"><span class="pre">ExecutionPlan.to_proto()</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.ExecutionPlan._raw_plan"><code class="docutils literal notranslate"><span class="pre">ExecutionPlan._raw_plan</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.ExecutionPlan.output_partitioning"><code class="docutils literal notranslate"><span class="pre">ExecutionPlan.output_partitioning</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.ExecutionPlan.partition_count"><code class="docutils literal notranslate"><span class="pre">ExecutionPlan.partition_count</span></code></a></li>
 </ul>
 </li>
@@ -3663,6 +3977,7 @@ file.</p></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.Expr.from_bytes"><code class="docutils literal notranslate"><span class="pre">Expr.from_bytes()</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.Expr.from_unixtime"><code class="docutils literal notranslate"><span class="pre">Expr.from_unixtime()</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.Expr.initcap"><code class="docutils literal notranslate"><span class="pre">Expr.initcap()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.Expr.is_nan"><code class="docutils literal notranslate"><span class="pre">Expr.is_nan()</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.Expr.is_not_null"><code class="docutils literal notranslate"><span class="pre">Expr.is_not_null()</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.Expr.is_null"><code class="docutils literal notranslate"><span class="pre">Expr.is_null()</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.Expr.isnan"><code class="docutils literal notranslate"><span class="pre">Expr.isnan()</span></code></a></li>
@@ -3800,6 +4115,17 @@ file.</p></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.ParquetWriterOptions.statistics_truncate_length"><code class="docutils literal notranslate"><span class="pre">ParquetWriterOptions.statistics_truncate_length</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.ParquetWriterOptions.write_batch_size"><code class="docutils literal notranslate"><span class="pre">ParquetWriterOptions.write_batch_size</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.ParquetWriterOptions.writer_version"><code class="docutils literal notranslate"><span class="pre">ParquetWriterOptions.writer_version</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.PhysicalPartitioning"><code class="docutils literal notranslate"><span class="pre">PhysicalPartitioning</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.PhysicalPartitioning.__eq__"><code class="docutils literal notranslate"><span class="pre">PhysicalPartitioning.__eq__()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.PhysicalPartitioning.__hash__"><code class="docutils literal notranslate"><span class="pre">PhysicalPartitioning.__hash__()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.PhysicalPartitioning.__repr__"><code class="docutils literal notranslate"><span class="pre">PhysicalPartitioning.__repr__()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.PhysicalPartitioning._key"><code class="docutils literal notranslate"><span class="pre">PhysicalPartitioning._key()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.PhysicalPartitioning._raw_partitioning"><code class="docutils literal notranslate"><span class="pre">PhysicalPartitioning._raw_partitioning</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.PhysicalPartitioning.hash_expressions"><code class="docutils literal notranslate"><span class="pre">PhysicalPartitioning.hash_expressions</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.PhysicalPartitioning.partition_count"><code class="docutils literal notranslate"><span class="pre">PhysicalPartitioning.partition_count</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.PhysicalPartitioning.scheme"><code class="docutils literal notranslate"><span class="pre">PhysicalPartitioning.scheme</span></code></a></li>
 </ul>
 </li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion.RecordBatch"><code class="docutils literal notranslate"><span class="pre">RecordBatch</span></code></a><ul class="nav section-nav flex-column">

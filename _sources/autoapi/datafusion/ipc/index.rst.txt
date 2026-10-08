@@ -173,11 +173,16 @@ Module Contents
    .. rubric:: Examples
 
    >>> from datafusion import SessionContext
-   >>> from datafusion.ipc import set_sender_ctx, get_sender_ctx
+   >>> from datafusion.ipc import (
+   ...     clear_sender_ctx,
+   ...     get_sender_ctx,
+   ...     set_sender_ctx,
+   ... )
    >>> driver = SessionContext().with_python_udf_inlining(enabled=False)
    >>> set_sender_ctx(driver)
    >>> get_sender_ctx() is driver
    True
+   >>> clear_sender_ctx()
 
 
 .. py:function:: set_worker_ctx(ctx: datafusion.context.SessionContext) -> None

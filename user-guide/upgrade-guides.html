@@ -33,6 +33,7 @@
     <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=8f2a1f02" />
     <link rel="stylesheet" type="text/css" href="../_static/mystnb.11b39860a7a0cbfd473a3ad8a317855267ff0bd372690045ca344a6b62be495e.css" />
     <link rel="stylesheet" type="text/css" href="../_static/graphviz.css?v=4ae1632d" />
+    <link rel="stylesheet" type="text/css" href="../_static/copybutton.css?v=76b2166b" />
     <link rel="stylesheet" type="text/css" href="../_static/theme_overrides.css?v=4af573bc" />
   
   <!-- So that users can add custom icons -->
@@ -44,6 +45,8 @@
     <script src="../_static/documentation_options.js?v=5929fcd5"></script>
     <script src="../_static/doctools.js?v=9bcbadda"></script>
     <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="../_static/copybutton.js?v=f281be69"></script>
     <script>DOCUMENTATION_OPTIONS.pagename = 'user-guide/upgrade-guides';</script>
     <script src="../_static/toc-toggle.js?v=36375f01"></script>
     <link rel="icon" href="../_static/favicon.svg"/>
@@ -138,6 +141,13 @@
 <li class="nav-item current active">
   <a class="nav-link nav-internal" href="index.html">
     User Guide
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../extension-guide/index.html">
+    Extension Guide
   </a>
 </li>
 
@@ -271,6 +281,13 @@
 
 
 <li class="nav-item ">
+  <a class="nav-link nav-internal" href="../extension-guide/index.html">
+    Extension Guide
+  </a>
+</li>
+
+
+<li class="nav-item ">
   <a class="nav-link nav-internal" href="../contributor-guide/index.html">
     Contributor Guide
   </a>
@@ -380,15 +397,34 @@
 </ul>
 </details></li>
 <li class="toctree-l2"><a class="reference internal" href="configuration.html">Configuration</a></li>
-<li class="toctree-l2"><a class="reference internal" href="distributing-work.html">Distributing work</a></li>
+<li class="toctree-l2"><a class="reference internal" href="extensions.html">Using extension libraries</a></li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="distributing-work/index.html">Distributing work</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l3"><a class="reference internal" href="distributing-work/expressions.html">Shipping expressions to workers</a></li>
+<li class="toctree-l3"><a class="reference internal" href="distributing-work/query-engines.html">Distributed query engines</a></li>
+</ul>
+</details></li>
 <li class="toctree-l2"><a class="reference internal" href="sql.html">SQL</a></li>
 <li class="toctree-l2 current active"><a class="current reference internal" href="#">Upgrade Guides</a></li>
 <li class="toctree-l2"><a class="reference internal" href="ai-coding-assistants.html">Using AI Coding Assistants</a></li>
 </ul>
 </details></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../extension-guide/index.html">Extension Guide</a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="../extension-guide/why-ffi.html">Why FFI</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../extension-guide/capsule-protocol.html">The capsule protocol</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../extension-guide/table-providers.html">Providers and catalogs</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../extension-guide/functions.html">Functions and table functions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../extension-guide/codecs.html">Extension codecs</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../extension-guide/bundles.html">Extension bundles</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../extension-guide/query-planners.html">Query planners</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../extension-guide/other-components.html">Optimizer rules and configuration</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../extension-guide/sessions.html">Sessions, handles, and lifetimes</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../extension-guide/checklist.html">Extension author checklist</a></li>
+</ul>
+</details></li>
 <li class="toctree-l1 has-children"><a class="reference internal" href="../contributor-guide/index.html">Contributor Guide</a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
 <li class="toctree-l2"><a class="reference internal" href="../contributor-guide/introduction.html">Introduction</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../contributor-guide/ffi.html">Python Extensions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../contributor-guide/pyo3-guidelines.html">PyO3 binding guidelines</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../contributor-guide/ffi-internals.html">FFI framing internals</a></li>
 </ul>
 </details></li>
 <li class="toctree-l1 has-children"><a class="reference internal" href="../autoapi/index.html">API Reference</a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
@@ -398,6 +434,7 @@
 <li class="toctree-l3"><a class="reference internal" href="../autoapi/datafusion/dataframe/index.html">datafusion.dataframe</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../autoapi/datafusion/dataframe_formatter/index.html">datafusion.dataframe_formatter</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../autoapi/datafusion/expr/index.html">datafusion.expr</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../autoapi/datafusion/extensions/index.html">datafusion.extensions</a></li>
 <li class="toctree-l3 has-children"><a class="reference internal" href="../autoapi/datafusion/functions/index.html">datafusion.functions</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
 <li class="toctree-l4"><a class="reference internal" href="../autoapi/datafusion/functions/spark/index.html">datafusion.functions.spark</a></li>
 </ul>
@@ -507,6 +544,370 @@
 -->
 <section id="upgrade-guides">
 <h1>Upgrade Guides<a class="headerlink" href="#upgrade-guides" title="Link to this heading">#</a></h1>
+<section id="datafusion-56-0-0">
+<h2>DataFusion 56.0.0<a class="headerlink" href="#datafusion-56-0-0" title="Link to this heading">#</a></h2>
+<section id="sort-and-order-by-now-order-nulls-last-by-default">
+<h3><code class="docutils literal notranslate"><span class="pre">sort</span></code> and <code class="docutils literal notranslate"><span class="pre">order_by</span></code> now order <code class="docutils literal notranslate"><span class="pre">NULLS</span> <span class="pre">LAST</span></code> by default<a class="headerlink" href="#sort-and-order-by-now-order-nulls-last-by-default" title="Link to this heading">#</a></h3>
+<p>Calling <code class="docutils literal notranslate"><span class="pre">.sort(...)</span></code> on a DataFrame or using the <code class="docutils literal notranslate"><span class="pre">.order_by(...)</span></code> function now
+orders rows with <code class="docutils literal notranslate"><span class="pre">NULLS</span> <span class="pre">LAST</span></code> by default, instead of <code class="docutils literal notranslate"><span class="pre">NULLS</span> <span class="pre">FIRST</span></code>. This follows
+the same behavior as SQL’s <code class="docutils literal notranslate"><span class="pre">ORDER</span> <span class="pre">BY</span></code> or the DataFrame’s <code class="docutils literal notranslate"><span class="pre">sort_by(...)</span></code>.</p>
+<p>To go back to the previous behavior, we need to explicitly specify
+<code class="docutils literal notranslate"><span class="pre">nulls_first=True</span></code>. Example:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># sort</span>
+<span class="n">df</span><span class="o">.</span><span class="n">sort</span><span class="p">(</span><span class="n">column</span><span class="p">(</span><span class="s2">&quot;a&quot;</span><span class="p">),</span> <span class="n">nulls_first</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+<span class="c1"># order by</span>
+<span class="n">expr</span> <span class="o">=</span> <span class="n">f</span><span class="o">.</span><span class="n">first_value</span><span class="p">(</span><span class="n">column</span><span class="p">(</span><span class="s2">&quot;a&quot;</span><span class="p">))</span><span class="o">.</span><span class="n">over</span><span class="p">(</span>
+    <span class="n">Window</span><span class="p">(</span>
+        <span class="n">partition_by</span><span class="o">=</span><span class="n">partition</span><span class="p">,</span>
+        <span class="n">order_by</span><span class="o">=</span><span class="n">f</span><span class="o">.</span><span class="n">order_by</span><span class="p">(</span><span class="n">column</span><span class="p">(</span><span class="s2">&quot;b&quot;</span><span class="p">),</span> <span class="n">nulls_first</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="p">)</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+</section>
+</section>
+<section id="datafusion-55-0-0">
+<h2>DataFusion 55.0.0<a class="headerlink" href="#datafusion-55-0-0" title="Link to this heading">#</a></h2>
+<p>This release extends the change made in 52.0.0 to the remaining
+<a class="reference internal" href="../extension-guide/capsule-protocol.html#extension-capsule-protocol"><span class="std std-ref">The capsule protocol</span></a> hook methods. Users who contribute their own
+<code class="docutils literal notranslate"><span class="pre">LogicalExtensionCodec</span></code> or
+<code class="docutils literal notranslate"><span class="pre">PhysicalExtensionCodec</span></code> via FFI must update
+<code class="docutils literal notranslate"><span class="pre">__datafusion_logical_extension_codec__</span></code> and
+<code class="docutils literal notranslate"><span class="pre">__datafusion_physical_extension_codec__</span></code> to accept an additional
+<code class="docutils literal notranslate"><span class="pre">session:</span> <span class="pre">Bound&lt;PyAny&gt;</span></code> parameter, and take the <code class="docutils literal notranslate"><span class="pre">TaskContextProvider</span></code> from that
+session rather than constructing a <code class="docutils literal notranslate"><span class="pre">SessionContext</span></code> of their own.</p>
+<p>Before:</p>
+<div class="highlight-rust notranslate"><div class="highlight"><pre><span></span><span class="k">fn</span><span class="w"> </span><span class="nf">__datafusion_physical_extension_codec__</span><span class="o">&lt;&#39;</span><span class="na">py</span><span class="o">&gt;</span><span class="p">(</span>
+<span class="w">    </span><span class="o">&amp;</span><span class="bp">self</span><span class="p">,</span>
+<span class="w">    </span><span class="n">py</span><span class="p">:</span><span class="w"> </span><span class="nc">Python</span><span class="o">&lt;&#39;</span><span class="na">py</span><span class="o">&gt;</span><span class="p">,</span>
+<span class="p">)</span><span class="w"> </span><span class="p">-&gt;</span><span class="w"> </span><span class="nc">PyResult</span><span class="o">&lt;</span><span class="n">Bound</span><span class="o">&lt;&#39;</span><span class="na">py</span><span class="p">,</span><span class="w"> </span><span class="n">PyCapsule</span><span class="o">&gt;&gt;</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="kd">let</span><span class="w"> </span><span class="n">ctx_provider</span><span class="p">:</span><span class="w"> </span><span class="nc">Arc</span><span class="o">&lt;</span><span class="k">dyn</span><span class="w"> </span><span class="n">TaskContextProvider</span><span class="o">&gt;</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Arc</span><span class="p">::</span><span class="n">clone</span><span class="p">(</span><span class="o">&amp;</span><span class="bp">self</span><span class="p">.</span><span class="n">ctx_provider</span><span class="p">);</span>
+<span class="w">    </span><span class="kd">let</span><span class="w"> </span><span class="n">ffi</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">FFI_PhysicalExtensionCodec</span><span class="p">::</span><span class="n">new</span><span class="p">(</span><span class="n">inner</span><span class="p">,</span><span class="w"> </span><span class="nb">Some</span><span class="p">(</span><span class="n">runtime</span><span class="p">),</span><span class="w"> </span><span class="o">&amp;</span><span class="n">ctx_provider</span><span class="p">);</span>
+<span class="w">    </span><span class="n">PyCapsule</span><span class="p">::</span><span class="n">new_with_value</span><span class="p">(</span><span class="n">py</span><span class="p">,</span><span class="w"> </span><span class="n">ffi</span><span class="p">,</span><span class="w"> </span><span class="n">cr</span><span class="s">&quot;datafusion_physical_extension_codec&quot;</span><span class="p">)</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p>After:</p>
+<div class="highlight-rust notranslate"><div class="highlight"><pre><span></span><span class="k">fn</span><span class="w"> </span><span class="nf">__datafusion_physical_extension_codec__</span><span class="o">&lt;&#39;</span><span class="na">py</span><span class="o">&gt;</span><span class="p">(</span>
+<span class="w">    </span><span class="o">&amp;</span><span class="bp">self</span><span class="p">,</span>
+<span class="w">    </span><span class="n">py</span><span class="p">:</span><span class="w"> </span><span class="nc">Python</span><span class="o">&lt;&#39;</span><span class="na">py</span><span class="o">&gt;</span><span class="p">,</span>
+<span class="w">    </span><span class="n">session</span><span class="p">:</span><span class="w"> </span><span class="nc">Bound</span><span class="o">&lt;&#39;</span><span class="na">py</span><span class="p">,</span><span class="w"> </span><span class="n">PyAny</span><span class="o">&gt;</span><span class="p">,</span>
+<span class="p">)</span><span class="w"> </span><span class="p">-&gt;</span><span class="w"> </span><span class="nc">PyResult</span><span class="o">&lt;</span><span class="n">Bound</span><span class="o">&lt;&#39;</span><span class="na">py</span><span class="p">,</span><span class="w"> </span><span class="n">PyCapsule</span><span class="o">&gt;&gt;</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="kd">let</span><span class="w"> </span><span class="n">ctx_provider</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ffi_task_context_provider_from_pycapsule</span><span class="p">(</span><span class="o">&amp;</span><span class="n">session</span><span class="p">)</span><span class="o">?</span><span class="p">;</span>
+<span class="w">    </span><span class="kd">let</span><span class="w"> </span><span class="n">ffi</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">FFI_PhysicalExtensionCodec</span><span class="p">::</span><span class="n">new</span><span class="p">(</span><span class="n">inner</span><span class="p">,</span><span class="w"> </span><span class="nb">Some</span><span class="p">(</span><span class="n">runtime</span><span class="p">),</span><span class="w"> </span><span class="n">ctx_provider</span><span class="p">);</span>
+<span class="w">    </span><span class="n">PyCapsule</span><span class="p">::</span><span class="n">new_with_value</span><span class="p">(</span><span class="n">py</span><span class="p">,</span><span class="w"> </span><span class="n">ffi</span><span class="p">,</span><span class="w"> </span><span class="n">cr</span><span class="s">&quot;datafusion_physical_extension_codec&quot;</span><span class="p">)</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p>The dropped <code class="docutils literal notranslate"><span class="pre">&amp;</span></code> on the last argument is not a typo. That parameter is
+<code class="docutils literal notranslate"><span class="pre">impl</span> <span class="pre">Into&lt;FFI_TaskContextProvider&gt;</span></code>, so it accepts either an
+<code class="docutils literal notranslate"><span class="pre">&amp;Arc&lt;dyn</span> <span class="pre">TaskContextProvider&gt;</span></code>, as before, or an <code class="docutils literal notranslate"><span class="pre">FFI_TaskContextProvider</span></code>,
+which is what <code class="docutils literal notranslate"><span class="pre">ffi_task_context_provider_from_pycapsule</span></code> hands back. Both forms
+compile; the argument changes because the provider now comes from the session
+rather than from a field.</p>
+<p>A codec that keeps its own <code class="docutils literal notranslate"><span class="pre">SessionContext</span></code> still compiles, but its decode
+callbacks resolve names against that empty session instead of the one running
+the query, so a function registered with <code class="docutils literal notranslate"><span class="pre">SessionContext.register_udf</span></code> is not
+visible to it. Taking the provider from <code class="docutils literal notranslate"><span class="pre">session</span></code> also removes a lifetime
+hazard: <code class="docutils literal notranslate"><span class="pre">FFI_TaskContextProvider</span></code> holds its provider weakly, so a context
+constructed inside the getter is already dropped by the time the capsule is
+used.</p>
+<p><code class="docutils literal notranslate"><span class="pre">SessionContext</span></code> accepts the argument on its own capsule getters and ignores
+it, so existing calls such as <code class="docutils literal notranslate"><span class="pre">ctx.__datafusion_logical_extension_codec__()</span></code>
+continue to work unchanged.</p>
+<p>The provider and catalog getters —
+<code class="docutils literal notranslate"><span class="pre">__datafusion_table_provider_factory__</span></code>, <code class="docutils literal notranslate"><span class="pre">__datafusion_catalog_provider__</span></code>,
+<code class="docutils literal notranslate"><span class="pre">__datafusion_catalog_provider_list__</span></code>, and <code class="docutils literal notranslate"><span class="pre">__datafusion_schema_provider__</span></code> —
+now receive the host’s logical extension codec as a bare
+<code class="docutils literal notranslate"><span class="pre">datafusion_logical_extension_codec</span></code> capsule rather than a session.
+<code class="docutils literal notranslate"><span class="pre">__datafusion_table_provider__</span></code> receives a session from
+<code class="docutils literal notranslate"><span class="pre">SessionContext.register_table</span></code> and a codec capsule from
+<code class="docutils literal notranslate"><span class="pre">Schema.register_table</span></code>. No code change is needed in either case: pass the
+argument to <code class="docutils literal notranslate"><span class="pre">ffi_logical_codec_from_pycapsule</span></code>, which calls the codec getter
+when the object has one and returns the object unchanged when it does not. Do
+not inspect the argument’s type. See <a class="reference internal" href="../extension-guide/capsule-protocol.html#extension-getter-argument"><span class="std std-ref">What your getter receives</span></a>.</p>
+<p>New in this release, <code class="docutils literal notranslate"><span class="pre">__datafusion_query_planner__</span></code> follows the same protocol.
+It receives the session and takes both extension codecs from it, so a planner
+library never builds a <code class="docutils literal notranslate"><span class="pre">TaskContextProvider</span></code> at all. Install one with
+<code class="docutils literal notranslate"><span class="pre">SessionContext.set_query_planner(planner)</span></code>, which mutates the session the same
+way <code class="docutils literal notranslate"><span class="pre">add_physical_optimizer_rule</span></code> does and returns nothing — the query planner
+lives in <code class="docutils literal notranslate"><span class="pre">SessionState</span></code>, so it belongs to the session rather than to a
+particular handle on it. See <a class="reference internal" href="../extension-guide/query-planners.html#extension-planners"><span class="std std-ref">Query planners</span></a> for the full protocol.</p>
+<section id="mismatched-extension-libraries-now-fail-loudly">
+<span id="extension-version-mismatch"></span><h3>Mismatched extension libraries now fail loudly<a class="headerlink" href="#mismatched-extension-libraries-now-fail-loudly" title="Link to this heading">#</a></h3>
+<p>Objects imported through the capsule protocol are checked against the major
+version of <code class="docutils literal notranslate"><span class="pre">datafusion-ffi</span></code> this package was built with. A table provider,
+extension codec, or query planner produced by a library built against a
+different DataFusion major version now raises an <code class="docutils literal notranslate"><span class="pre">ImportError</span></code> naming the
+version found and the one expected, instead of being used as-is. Table
+providers previously performed no such check.</p>
+<p>This is a diagnostic rather than a soundness guarantee — reading the version
+out of the struct already assumes the local field layout — but it turns the
+common “extension library built against the wrong DataFusion” mistake into a
+clear message rather than undefined behaviour on first use.</p>
+<p><code class="docutils literal notranslate"><span class="pre">FFI_TaskContextProvider</span></code>, <code class="docutils literal notranslate"><span class="pre">FFI_TableProviderFactory</span></code>, and <code class="docutils literal notranslate"><span class="pre">FFI_ExtensionOptions</span></code>
+carry no version field, so objects of those types cannot be checked.</p>
+</section>
+<section id="extension-codecs-compose-instead-of-replacing">
+<h3>Extension codecs compose instead of replacing<a class="headerlink" href="#extension-codecs-compose-instead-of-replacing" title="Link to this heading">#</a></h3>
+<p><code class="docutils literal notranslate"><span class="pre">SessionContext.with_logical_extension_codec</span></code> and
+<code class="docutils literal notranslate"><span class="pre">with_physical_extension_codec</span></code> previously replaced whichever codec was already
+installed, so a session could only ever have one. Installing a second codec
+silently discarded the first, and plans failed later with a confusing decode
+error. Both methods now append to a chain, and a session can carry codecs from
+several independent libraries at once.</p>
+<p><strong>No change is required in an extension codec.</strong> Keep implementing
+<code class="docutils literal notranslate"><span class="pre">LogicalExtensionCodec</span></code> or <code class="docutils literal notranslate"><span class="pre">PhysicalExtensionCodec</span></code> exactly as before. Your codec
+is still handed back exactly the bytes it wrote, and is never handed a payload
+another library’s codec wrote.</p>
+<p>Callers relying on replacement semantics — installing a codec in order to remove
+a previous one — are affected. There is no way to remove an installed codec.</p>
+<p>A serialized plan now records which codec wrote each payload, as a short id taken
+from the codec’s class. Two behaviours follow from that:</p>
+<ul class="simple">
+<li><p>Installing two instances of one class raises a <code class="docutils literal notranslate"><span class="pre">ValueError</span></code>, because both would
+claim the same id. Pass <code class="docutils literal notranslate"><span class="pre">codec_id=</span></code> to tell them apart.</p></li>
+<li><p>A codec installed from a bare <code class="docutils literal notranslate"><span class="pre">PyCapsule</span></code> has no class to take an id from, so it
+gets one private to the session that installed it. It works normally on that
+session, but a plan it encodes cannot be decoded on an unrelated one. Pass
+<code class="docutils literal notranslate"><span class="pre">codec_id=</span></code> if those plans have to cross sessions.</p></li>
+</ul>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">ctx</span> <span class="o">=</span> <span class="n">ctx</span><span class="o">.</span><span class="n">with_logical_extension_codec</span><span class="p">(</span><span class="n">lib_a</span><span class="o">.</span><span class="n">codec</span><span class="p">())</span>
+<span class="n">ctx</span> <span class="o">=</span> <span class="n">ctx</span><span class="o">.</span><span class="n">with_logical_extension_codec</span><span class="p">(</span><span class="n">lib_b</span><span class="o">.</span><span class="n">codec</span><span class="p">())</span>  <span class="c1"># no longer discards lib_a</span>
+
+<span class="c1"># Two instances of one class need distinct ids.</span>
+<span class="n">ctx</span> <span class="o">=</span> <span class="n">ctx</span><span class="o">.</span><span class="n">with_logical_extension_codec</span><span class="p">(</span><span class="n">lib_a</span><span class="o">.</span><span class="n">Codec</span><span class="p">(),</span> <span class="n">codec_id</span><span class="o">=</span><span class="s2">&quot;lib_a.reader&quot;</span><span class="p">)</span>
+<span class="n">ctx</span> <span class="o">=</span> <span class="n">ctx</span><span class="o">.</span><span class="n">with_logical_extension_codec</span><span class="p">(</span><span class="n">lib_a</span><span class="o">.</span><span class="n">Codec</span><span class="p">(),</span> <span class="n">codec_id</span><span class="o">=</span><span class="s2">&quot;lib_a.writer&quot;</span><span class="p">)</span>
+
+<span class="n">ctx</span><span class="o">.</span><span class="n">logical_extension_codec_ids</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>Serialized plans change shape once an extension codec is installed, because each
+payload now records which codec wrote it. A session with no extension codecs
+installed produces the same bytes as before, as do functions encoded by name.
+Regenerate any plan you serialized with an earlier release and stored for later
+use, if it was produced by a session with an extension codec installed.</p>
+</section>
+<section id="capsule-getter-protocols-moved-to-datafusion-extensions">
+<h3>Capsule-getter protocols moved to <code class="docutils literal notranslate"><span class="pre">datafusion.extensions</span></code><a class="headerlink" href="#capsule-getter-protocols-moved-to-datafusion-extensions" title="Link to this heading">#</a></h3>
+<p><code class="docutils literal notranslate"><span class="pre">PhysicalOptimizerRuleExportable</span></code> now lives in <code class="docutils literal notranslate"><span class="pre">datafusion.extensions</span></code>, next to
+the other protocols an extension library implements against. It was previously
+importable from <code class="docutils literal notranslate"><span class="pre">datafusion.context</span></code>, and that path is gone.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">datafusion.context</span><span class="w"> </span><span class="kn">import</span> <span class="n">PhysicalOptimizerRuleExportable</span>  <span class="c1"># before</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">datafusion.extensions</span><span class="w"> </span><span class="kn">import</span> <span class="n">PhysicalOptimizerRuleExportable</span>  <span class="c1"># after</span>
+</pre></div>
+</div>
+<p>This affects type annotations only. The protocol is structural and not
+<code class="docutils literal notranslate"><span class="pre">&#64;runtime_checkable</span></code>, so nothing imports it to call <code class="docutils literal notranslate"><span class="pre">isinstance</span></code>, and
+<code class="docutils literal notranslate"><span class="pre">SessionContext.add_physical_optimizer_rule</span></code> is unchanged — a rule object that
+worked before still works, whether or not its library names the protocol
+anywhere.</p>
+<p>The bundle protocols added in this release —  <code class="docutils literal notranslate"><span class="pre">QueryPlannerExportable</span></code>,
+<code class="docutils literal notranslate"><span class="pre">SessionComponentsExportable</span></code>, and <code class="docutils literal notranslate"><span class="pre">SessionPlannerExportable</span></code> — are reached the
+same way, through <code class="docutils literal notranslate"><span class="pre">datafusion.extensions</span></code> rather than the package root. They are
+new in 55.0.0, so no earlier import path existed. <code class="docutils literal notranslate"><span class="pre">SessionExtensionComponents</span></code>
+stays at the root, because a bundle constructs one rather than merely naming it:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">datafusion</span><span class="w"> </span><span class="kn">import</span> <span class="n">SessionExtensionComponents</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">datafusion.extensions</span><span class="w"> </span><span class="kn">import</span> <span class="n">SessionComponentsExportable</span>
+</pre></div>
+</div>
+</section>
+<section id="sessioncontext-execute-renamed-its-second-parameter">
+<h3><code class="docutils literal notranslate"><span class="pre">SessionContext.execute</span></code> renamed its second parameter<a class="headerlink" href="#sessioncontext-execute-renamed-its-second-parameter" title="Link to this heading">#</a></h3>
+<p>The parameter is a single partition index, not a count, and is now named
+<code class="docutils literal notranslate"><span class="pre">partition</span></code> rather than <code class="docutils literal notranslate"><span class="pre">partitions</span></code>. Positional calls are unaffected; update
+any call passing it by keyword.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">ctx</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">plan</span><span class="p">,</span> <span class="n">partitions</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>  <span class="c1"># before</span>
+<span class="n">ctx</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">plan</span><span class="p">,</span> <span class="n">partition</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>  <span class="c1"># after</span>
+</pre></div>
+</div>
+</section>
+<section id="more-aggregate-functions-accept-distinct">
+<h3>More aggregate functions accept <code class="docutils literal notranslate"><span class="pre">distinct</span></code><a class="headerlink" href="#more-aggregate-functions-accept-distinct" title="Link to this heading">#</a></h3>
+<p><a class="reference internal" href="../autoapi/datafusion/functions/index.html#datafusion.functions.bit_and" title="datafusion.functions.bit_and"><code class="xref py py-func docutils literal notranslate"><span class="pre">bit_and()</span></code></a>,
+<a class="reference internal" href="../autoapi/datafusion/functions/index.html#datafusion.functions.bit_or" title="datafusion.functions.bit_or"><code class="xref py py-func docutils literal notranslate"><span class="pre">bit_or()</span></code></a>,
+<a class="reference internal" href="../autoapi/datafusion/functions/index.html#datafusion.functions.mean" title="datafusion.functions.mean"><code class="xref py py-func docutils literal notranslate"><span class="pre">mean()</span></code></a>,
+<a class="reference internal" href="../autoapi/datafusion/functions/index.html#datafusion.functions.percentile_cont" title="datafusion.functions.percentile_cont"><code class="xref py py-func docutils literal notranslate"><span class="pre">percentile_cont()</span></code></a>,
+<a class="reference internal" href="../autoapi/datafusion/functions/index.html#datafusion.functions.quantile_cont" title="datafusion.functions.quantile_cont"><code class="xref py py-func docutils literal notranslate"><span class="pre">quantile_cont()</span></code></a>, and
+<a class="reference internal" href="../autoapi/datafusion/functions/index.html#datafusion.functions.string_agg" title="datafusion.functions.string_agg"><code class="xref py py-func docutils literal notranslate"><span class="pre">string_agg()</span></code></a> now accept a <code class="docutils literal notranslate"><span class="pre">distinct</span></code> argument.
+As with <code class="docutils literal notranslate"><span class="pre">sum</span></code> and <code class="docutils literal notranslate"><span class="pre">avg</span></code> in 54.0.0, <code class="docutils literal notranslate"><span class="pre">distinct</span></code> is inserted <em>before</em> <code class="docutils literal notranslate"><span class="pre">filter</span></code>, so
+code that passed <code class="docutils literal notranslate"><span class="pre">filter</span></code> (or, for <code class="docutils literal notranslate"><span class="pre">string_agg</span></code>, <code class="docutils literal notranslate"><span class="pre">order_by</span></code>) positionally must
+pass it by keyword.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">f</span><span class="o">.</span><span class="n">bit_and</span><span class="p">(</span><span class="n">column</span><span class="p">(</span><span class="s2">&quot;a&quot;</span><span class="p">),</span> <span class="n">my_filter</span><span class="p">)</span>  <span class="c1"># before</span>
+<span class="n">f</span><span class="o">.</span><span class="n">bit_and</span><span class="p">(</span><span class="n">column</span><span class="p">(</span><span class="s2">&quot;a&quot;</span><span class="p">),</span> <span class="nb">filter</span><span class="o">=</span><span class="n">my_filter</span><span class="p">)</span>  <span class="c1"># after</span>
+</pre></div>
+</div>
+<p>Passing <code class="docutils literal notranslate"><span class="pre">filter</span></code> to <code class="docutils literal notranslate"><span class="pre">mean</span></code> previously raised a <code class="docutils literal notranslate"><span class="pre">TypeError</span></code>, whether passed
+positionally or by keyword; it now works when passed by keyword.</p>
+</section>
+<section id="chaining-keeps-options-already-set">
+<h3>Chaining keeps options already set<a class="headerlink" href="#chaining-keeps-options-already-set" title="Link to this heading">#</a></h3>
+<p>Chaining a builder method (<code class="docutils literal notranslate"><span class="pre">order_by</span></code>, <code class="docutils literal notranslate"><span class="pre">filter</span></code>, <code class="docutils literal notranslate"><span class="pre">distinct</span></code>, <code class="docutils literal notranslate"><span class="pre">null_treatment</span></code>,
+<code class="docutils literal notranslate"><span class="pre">partition_by</span></code>, <code class="docutils literal notranslate"><span class="pre">window_frame</span></code>) or <code class="docutils literal notranslate"><span class="pre">over()</span></code> onto a function used to start from
+an empty builder, so options set by the function’s keyword arguments were
+silently reset. On an aggregate they are now kept, which can change results:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">e</span> <span class="o">=</span> <span class="n">f</span><span class="o">.</span><span class="n">string_agg</span><span class="p">(</span><span class="n">col</span><span class="p">(</span><span class="s2">&quot;s&quot;</span><span class="p">),</span> <span class="s2">&quot;,&quot;</span><span class="p">,</span> <span class="n">order_by</span><span class="o">=</span><span class="s2">&quot;s&quot;</span><span class="p">)</span>
+<span class="n">e</span><span class="o">.</span><span class="n">distinct</span><span class="p">()</span><span class="o">.</span><span class="n">build</span><span class="p">()</span>  <span class="c1"># before: order_by dropped; after: kept</span>
+</pre></div>
+</div>
+<p>On a window function that already has a <code class="docutils literal notranslate"><span class="pre">partition_by</span></code>, <code class="docutils literal notranslate"><span class="pre">order_by</span></code>, or
+<code class="docutils literal notranslate"><span class="pre">window_frame</span></code>, chaining now raises instead of dropping them. Set them in one
+place, as described in <a class="reference internal" href="common-operations/windows.html#window-function-chaining"><span class="std std-ref">Chaining onto a window function</span></a>:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">e</span> <span class="o">=</span> <span class="n">f</span><span class="o">.</span><span class="n">lead</span><span class="p">(</span><span class="n">col</span><span class="p">(</span><span class="s2">&quot;v&quot;</span><span class="p">),</span> <span class="mi">1</span><span class="p">,</span> <span class="n">partition_by</span><span class="o">=</span><span class="p">[</span><span class="n">col</span><span class="p">(</span><span class="s2">&quot;g&quot;</span><span class="p">)],</span> <span class="n">order_by</span><span class="o">=</span><span class="s2">&quot;t&quot;</span><span class="p">)</span>
+<span class="n">e</span><span class="o">.</span><span class="n">over</span><span class="p">(</span><span class="n">Window</span><span class="p">(</span><span class="n">order_by</span><span class="o">=</span><span class="s2">&quot;t&quot;</span><span class="p">))</span>  <span class="c1"># before: partition dropped; after: raises</span>
+<span class="n">f</span><span class="o">.</span><span class="n">lead</span><span class="p">(</span><span class="n">col</span><span class="p">(</span><span class="s2">&quot;v&quot;</span><span class="p">),</span> <span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">over</span><span class="p">(</span><span class="n">Window</span><span class="p">(</span><span class="n">partition_by</span><span class="o">=</span><span class="p">[</span><span class="n">col</span><span class="p">(</span><span class="s2">&quot;g&quot;</span><span class="p">)],</span> <span class="n">order_by</span><span class="o">=</span><span class="s2">&quot;t&quot;</span><span class="p">))</span>  <span class="c1"># after</span>
+</pre></div>
+</div>
+<p>Options that used to be dropped now take effect, so a chain that ran before
+may now raise. For example, DISTINCT requires the ORDER BY expressions to be
+among the arguments:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">f</span><span class="o">.</span><span class="n">array_agg</span><span class="p">(</span><span class="n">col</span><span class="p">(</span><span class="s2">&quot;s&quot;</span><span class="p">),</span> <span class="n">distinct</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span><span class="o">.</span><span class="n">order_by</span><span class="p">(</span><span class="n">col</span><span class="p">(</span><span class="s2">&quot;v&quot;</span><span class="p">))</span><span class="o">.</span><span class="n">build</span><span class="p">()</span>
+<span class="c1"># before: ran without DISTINCT</span>
+<span class="c1"># after:  Execution error: In an aggregate with DISTINCT, ORDER BY expressions</span>
+<span class="c1">#         must appear in argument list</span>
+</pre></div>
+</div>
+<p>Drop <code class="docutils literal notranslate"><span class="pre">distinct</span></code>, or order by the aggregated column, to get either of the
+results the chain can actually produce.</p>
+<p>An option that does not apply to the function now raises as soon as it is
+set, anywhere in the chain. <code class="docutils literal notranslate"><span class="pre">filter</span></code> and <code class="docutils literal notranslate"><span class="pre">distinct</span></code> need an aggregate,
+including one used as a window function, and <code class="docutils literal notranslate"><span class="pre">partition_by</span></code> and
+<code class="docutils literal notranslate"><span class="pre">window_frame</span></code> need a window function. Later in a chain these were silently
+dropped:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">f</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">col</span><span class="p">(</span><span class="s2">&quot;v&quot;</span><span class="p">))</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">col</span><span class="p">(</span><span class="s2">&quot;v&quot;</span><span class="p">)</span> <span class="o">&gt;</span> <span class="n">lit</span><span class="p">(</span><span class="mi">1</span><span class="p">))</span><span class="o">.</span><span class="n">partition_by</span><span class="p">(</span><span class="n">col</span><span class="p">(</span><span class="s2">&quot;g&quot;</span><span class="p">))</span>
+<span class="c1"># before: partition_by dropped; after: raises</span>
+</pre></div>
+</div>
+<p>The default <code class="docutils literal notranslate"><span class="pre">RESPECT</span> <span class="pre">NULLS</span></code> set by <code class="docutils literal notranslate"><span class="pre">first_value</span></code>, <code class="docutils literal notranslate"><span class="pre">last_value</span></code>, and <code class="docutils literal notranslate"><span class="pre">nth_value</span></code>
+is also kept, so their generated column names change:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">f</span><span class="o">.</span><span class="n">first_value</span><span class="p">(</span><span class="n">col</span><span class="p">(</span><span class="s2">&quot;a&quot;</span><span class="p">))</span><span class="o">.</span><span class="n">order_by</span><span class="p">(</span><span class="n">col</span><span class="p">(</span><span class="s2">&quot;b&quot;</span><span class="p">))</span><span class="o">.</span><span class="n">build</span><span class="p">()</span>
+<span class="c1"># before: first_value(a) ORDER BY [b ASC NULLS FIRST]</span>
+<span class="c1"># after:  first_value(a) RESPECT NULLS ORDER BY [b ASC NULLS FIRST]</span>
+</pre></div>
+</div>
+<p>This now matches the name from <code class="docutils literal notranslate"><span class="pre">f.first_value(col(&quot;a&quot;),</span> <span class="pre">order_by=col(&quot;b&quot;))</span></code>.
+Code that selects the result by its generated name should <code class="docutils literal notranslate"><span class="pre">alias()</span></code> it instead.</p>
+</section>
+<section id="over-keeps-options-set-on-an-aggregate">
+<h3><code class="docutils literal notranslate"><span class="pre">over()</span></code> keeps options set on an aggregate<a class="headerlink" href="#over-keeps-options-set-on-an-aggregate" title="Link to this heading">#</a></h3>
+<p><code class="docutils literal notranslate"><span class="pre">Expr.over()</span></code> on an aggregate used to drop the <code class="docutils literal notranslate"><span class="pre">filter</span></code>, <code class="docutils literal notranslate"><span class="pre">distinct</span></code>,
+<code class="docutils literal notranslate"><span class="pre">null_treatment</span></code>, and <code class="docutils literal notranslate"><span class="pre">order_by</span></code> options it was built with. The first three are
+now kept, which can change results:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">f</span><span class="o">.</span><span class="n">avg</span><span class="p">(</span><span class="n">col</span><span class="p">(</span><span class="s2">&quot;v&quot;</span><span class="p">),</span> <span class="n">distinct</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span><span class="o">.</span><span class="n">over</span><span class="p">(</span><span class="n">Window</span><span class="p">())</span>
+<span class="c1"># v = [1, 1, 4]; before: 2.0, after: 2.5</span>
+</pre></div>
+</div>
+<p>An <code class="docutils literal notranslate"><span class="pre">order_by</span></code> on the aggregate now raises instead of being dropped, as it does
+with <code class="docutils literal notranslate"><span class="pre">OVER</span></code> in SQL. Remove it, or move it into the <code class="docutils literal notranslate"><span class="pre">Window</span></code> if it was meant to
+order the rows:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># before: order_by dropped; after: raises</span>
+<span class="n">f</span><span class="o">.</span><span class="n">first_value</span><span class="p">(</span><span class="n">col</span><span class="p">(</span><span class="s2">&quot;v&quot;</span><span class="p">),</span> <span class="n">order_by</span><span class="o">=</span><span class="n">col</span><span class="p">(</span><span class="s2">&quot;i&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">sort</span><span class="p">(</span><span class="n">ascending</span><span class="o">=</span><span class="kc">False</span><span class="p">))</span><span class="o">.</span><span class="n">over</span><span class="p">(</span>
+    <span class="n">Window</span><span class="p">(</span><span class="n">partition_by</span><span class="o">=</span><span class="p">[</span><span class="n">col</span><span class="p">(</span><span class="s2">&quot;g&quot;</span><span class="p">)])</span>
+<span class="p">)</span>
+
+<span class="c1"># after: the Window orders the rows the aggregate sees</span>
+<span class="n">f</span><span class="o">.</span><span class="n">first_value</span><span class="p">(</span><span class="n">col</span><span class="p">(</span><span class="s2">&quot;v&quot;</span><span class="p">))</span><span class="o">.</span><span class="n">over</span><span class="p">(</span>
+    <span class="n">Window</span><span class="p">(</span><span class="n">partition_by</span><span class="o">=</span><span class="p">[</span><span class="n">col</span><span class="p">(</span><span class="s2">&quot;g&quot;</span><span class="p">)],</span> <span class="n">order_by</span><span class="o">=</span><span class="p">[</span><span class="n">col</span><span class="p">(</span><span class="s2">&quot;i&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">sort</span><span class="p">(</span><span class="n">ascending</span><span class="o">=</span><span class="kc">False</span><span class="p">)])</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+<p>A <code class="docutils literal notranslate"><span class="pre">WITHIN</span> <span class="pre">GROUP</span></code> function such as <code class="docutils literal notranslate"><span class="pre">percentile_cont</span></code> still accepts
+an ascending <code class="docutils literal notranslate"><span class="pre">sort_expression</span></code>, and raises on a descending one, which used to
+give the ascending result. See <a class="reference internal" href="common-operations/windows.html#aggregate-over-options"><span class="std std-ref">Options set on the aggregate</span></a>.</p>
+</section>
+<section id="python-aggregate-udfs-reject-distinct">
+<h3>Python aggregate UDFs reject <code class="docutils literal notranslate"><span class="pre">DISTINCT</span></code><a class="headerlink" href="#python-aggregate-udfs-reject-distinct" title="Link to this heading">#</a></h3>
+<p>A Python <a class="reference internal" href="../autoapi/datafusion/user_defined/index.html#datafusion.user_defined.Accumulator" title="datafusion.user_defined.Accumulator"><code class="xref py py-class docutils literal notranslate"><span class="pre">Accumulator</span></code></a> cannot deduplicate its
+input, so a Python aggregate UDF with <code class="docutils literal notranslate"><span class="pre">DISTINCT</span></code> counted every row. It now
+raises instead of returning that result:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">my_sum</span><span class="p">(</span><span class="n">col</span><span class="p">(</span><span class="s2">&quot;v&quot;</span><span class="p">))</span><span class="o">.</span><span class="n">over</span><span class="p">(</span><span class="n">Window</span><span class="p">())</span><span class="o">.</span><span class="n">distinct</span><span class="p">()</span><span class="o">.</span><span class="n">build</span><span class="p">()</span>
+<span class="c1"># v = [1, 1, 1, 5]; before: 8.0; after: DISTINCT is not supported ...</span>
+</pre></div>
+</div>
+<p>When the optimizer rewrites the query to group by the distinct values first,
+as it does for SQL’s <code class="docutils literal notranslate"><span class="pre">SELECT</span> <span class="pre">my_sum(DISTINCT</span> <span class="pre">v)</span> <span class="pre">FROM</span> <span class="pre">t</span></code>, the query still runs
+and gives the distinct result.</p>
+</section>
+<section id="percentile-functions-keep-the-sort-direction">
+<h3>Percentile functions keep the sort direction<a class="headerlink" href="#percentile-functions-keep-the-sort-direction" title="Link to this heading">#</a></h3>
+<p><a class="reference internal" href="../autoapi/datafusion/functions/index.html#datafusion.functions.percentile_cont" title="datafusion.functions.percentile_cont"><code class="xref py py-func docutils literal notranslate"><span class="pre">percentile_cont()</span></code></a>,
+<a class="reference internal" href="../autoapi/datafusion/functions/index.html#datafusion.functions.quantile_cont" title="datafusion.functions.quantile_cont"><code class="xref py py-func docutils literal notranslate"><span class="pre">quantile_cont()</span></code></a>,
+<a class="reference internal" href="../autoapi/datafusion/functions/index.html#datafusion.functions.approx_percentile_cont" title="datafusion.functions.approx_percentile_cont"><code class="xref py py-func docutils literal notranslate"><span class="pre">approx_percentile_cont()</span></code></a>, and
+<a class="reference internal" href="../autoapi/datafusion/functions/index.html#datafusion.functions.approx_percentile_cont_with_weight" title="datafusion.functions.approx_percentile_cont_with_weight"><code class="xref py py-func docutils literal notranslate"><span class="pre">approx_percentile_cont_with_weight()</span></code></a> ignored the
+direction of <code class="docutils literal notranslate"><span class="pre">sort_expression</span></code>, so a descending sort gave the ascending result.
+Used as aggregates, they now match <code class="docutils literal notranslate"><span class="pre">WITHIN</span> <span class="pre">GROUP</span> <span class="pre">(ORDER</span> <span class="pre">BY</span> <span class="pre">...</span> <span class="pre">DESC)</span></code> in SQL
+(see <a class="reference internal" href="common-operations/windows.html#aggregate-over-options"><span class="std std-ref">Options set on the aggregate</span></a> for their use in a window):</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">f</span><span class="o">.</span><span class="n">percentile_cont</span><span class="p">(</span><span class="n">col</span><span class="p">(</span><span class="s2">&quot;a&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">sort</span><span class="p">(</span><span class="n">ascending</span><span class="o">=</span><span class="kc">False</span><span class="p">),</span> <span class="mf">0.25</span><span class="p">)</span>
+<span class="c1"># a = [1, 2, 3, 4, 5]; before: 2.0, after: 4.0</span>
+</pre></div>
+</div>
+<p>Their generated column names now include the ordering, in the same form as SQL.
+Code that selects the result by its generated name should <code class="docutils literal notranslate"><span class="pre">alias()</span></code> it instead.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">f</span><span class="o">.</span><span class="n">percentile_cont</span><span class="p">(</span><span class="n">col</span><span class="p">(</span><span class="s2">&quot;a&quot;</span><span class="p">),</span> <span class="mf">0.25</span><span class="p">)</span>
+<span class="c1"># before: percentile_cont(t.a,Float64(0.25))</span>
+<span class="c1"># after:  percentile_cont(Float64(0.25)) WITHIN GROUP [t.a ASC NULLS FIRST]</span>
+</pre></div>
+</div>
+</section>
+<section id="fill-null-subset-fills-no-columns">
+<h3><code class="docutils literal notranslate"><span class="pre">fill_null(subset=[])</span></code> fills no columns<a class="headerlink" href="#fill-null-subset-fills-no-columns" title="Link to this heading">#</a></h3>
+<p><a class="reference internal" href="../autoapi/datafusion/dataframe/index.html#datafusion.dataframe.DataFrame.fill_null" title="datafusion.dataframe.DataFrame.fill_null"><code class="xref py py-meth docutils literal notranslate"><span class="pre">fill_null()</span></code></a> with an empty <code class="docutils literal notranslate"><span class="pre">subset</span></code>
+list used to fill every column, the same as <code class="docutils literal notranslate"><span class="pre">subset=None</span></code>. It now returns the
+DataFrame unchanged, so a subset computed from the schema that matches nothing
+no longer rewrites every column. The new
+<a class="reference internal" href="../autoapi/datafusion/dataframe/index.html#datafusion.dataframe.DataFrame.fill_nan" title="datafusion.dataframe.DataFrame.fill_nan"><code class="xref py py-meth docutils literal notranslate"><span class="pre">fill_nan()</span></code></a> behaves the same way.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">df</span><span class="o">.</span><span class="n">fill_null</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">subset</span><span class="o">=</span><span class="p">[])</span>  <span class="c1"># before: fills all columns; after: fills none</span>
+<span class="n">df</span><span class="o">.</span><span class="n">fill_null</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>  <span class="c1"># fills all columns, before and after</span>
+</pre></div>
+</div>
+</section>
+<section id="spark-last-day-renamed-its-parameter">
+<h3><code class="docutils literal notranslate"><span class="pre">spark.last_day</span></code> renamed its parameter<a class="headerlink" href="#spark-last-day-renamed-its-parameter" title="Link to this heading">#</a></h3>
+<p>The parameter of <a class="reference internal" href="../autoapi/datafusion/functions/spark/index.html#datafusion.functions.spark.last_day" title="datafusion.functions.spark.last_day"><code class="xref py py-func docutils literal notranslate"><span class="pre">datafusion.functions.spark.last_day()</span></code></a> is now named
+<code class="docutils literal notranslate"><span class="pre">date</span></code>, matching <code class="docutils literal notranslate"><span class="pre">pyspark.sql.functions.last_day</span></code>. Positional calls are
+unaffected; update any call passing it by keyword.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">spark</span><span class="o">.</span><span class="n">last_day</span><span class="p">(</span><span class="n">col</span><span class="o">=</span><span class="n">d</span><span class="p">)</span>  <span class="c1"># before</span>
+<span class="n">spark</span><span class="o">.</span><span class="n">last_day</span><span class="p">(</span><span class="n">date</span><span class="o">=</span><span class="n">d</span><span class="p">)</span>  <span class="c1"># after</span>
+</pre></div>
+</div>
+</section>
+<section id="changes-to-the-datafusion-python-util-crate">
+<h3>Changes to the <code class="docutils literal notranslate"><span class="pre">datafusion-python-util</span></code> crate<a class="headerlink" href="#changes-to-the-datafusion-python-util-crate" title="Link to this heading">#</a></h3>
+<p>Extension libraries written in Rust usually depend on the
+<code class="docutils literal notranslate"><span class="pre">datafusion-python-util</span></code> crate for the helpers that read these capsules. Two of
+those helpers changed, because the getter they call now takes the session.</p>
+<p><code class="docutils literal notranslate"><span class="pre">ffi_logical_codec_from_pycapsule</span></code> takes a second argument. Pass <code class="docutils literal notranslate"><span class="pre">Some(session)</span></code>
+when importing an object from another library, so its getter receives the
+session it is being installed on. Pass <code class="docutils literal notranslate"><span class="pre">None</span></code> when the object <em>is</em> a session and
+you are asking it for what it holds:</p>
+<div class="highlight-rust notranslate"><div class="highlight"><pre><span></span><span class="c1">// Before</span>
+<span class="kd">let</span><span class="w"> </span><span class="n">codec</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ffi_logical_codec_from_pycapsule</span><span class="p">(</span><span class="n">obj</span><span class="p">)</span><span class="o">?</span><span class="p">;</span>
+
+<span class="c1">// After</span>
+<span class="kd">let</span><span class="w"> </span><span class="n">codec</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ffi_logical_codec_from_pycapsule</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span><span class="w"> </span><span class="nb">Some</span><span class="p">(</span><span class="n">session</span><span class="p">))</span><span class="o">?</span><span class="p">;</span>
+</pre></div>
+</div>
+<p><code class="docutils literal notranslate"><span class="pre">physical_codec_from_pycapsule</span></code> has been <strong>removed</strong>. It called
+<code class="docutils literal notranslate"><span class="pre">__datafusion_physical_extension_codec__</span></code> with no arguments, which no longer
+matches the protocol, so against an updated codec it raised a bare <code class="docutils literal notranslate"><span class="pre">TypeError</span></code>
+and against an outdated one it silently produced a codec bound to the wrong
+session. Use <code class="docutils literal notranslate"><span class="pre">ffi_physical_codec_from_pycapsule</span></code>, which passes the session:</p>
+<div class="highlight-rust notranslate"><div class="highlight"><pre><span></span><span class="c1">// Before</span>
+<span class="kd">let</span><span class="w"> </span><span class="n">codec</span><span class="p">:</span><span class="w"> </span><span class="nc">Arc</span><span class="o">&lt;</span><span class="k">dyn</span><span class="w"> </span><span class="n">PhysicalExtensionCodec</span><span class="o">&gt;</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">physical_codec_from_pycapsule</span><span class="p">(</span><span class="o">&amp;</span><span class="n">obj</span><span class="p">)</span><span class="o">?</span><span class="p">;</span>
+
+<span class="c1">// After</span>
+<span class="kd">let</span><span class="w"> </span><span class="n">ffi</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ffi_physical_codec_from_pycapsule</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span><span class="w"> </span><span class="nb">Some</span><span class="p">(</span><span class="n">session</span><span class="p">))</span><span class="o">?</span><span class="p">;</span>
+<span class="kd">let</span><span class="w"> </span><span class="n">codec</span><span class="p">:</span><span class="w"> </span><span class="nc">Arc</span><span class="o">&lt;</span><span class="k">dyn</span><span class="w"> </span><span class="n">PhysicalExtensionCodec</span><span class="o">&gt;</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="o">&amp;</span><span class="n">ffi</span><span class="p">).</span><span class="n">into</span><span class="p">();</span>
+</pre></div>
+</div>
+<p><code class="docutils literal notranslate"><span class="pre">physical_optimizer_rule_from_pycapsule</span></code> and <code class="docutils literal notranslate"><span class="pre">task_context_from_pycapsule</span></code> are
+unchanged. Their hooks take no session.</p>
+<p>Calling a getter that still has the old signature now raises an <code class="docutils literal notranslate"><span class="pre">ImportError</span></code>
+naming the method, with the original <code class="docutils literal notranslate"><span class="pre">TypeError</span></code> retained as its <code class="docutils literal notranslate"><span class="pre">__cause__</span></code>,
+rather than a bare <code class="docutils literal notranslate"><span class="pre">TypeError</span></code>.</p>
+</section>
+</section>
 <section id="datafusion-54-0-0">
 <h2>DataFusion 54.0.0<a class="headerlink" href="#datafusion-54-0-0" title="Link to this heading">#</a></h2>
 <p>The <code class="docutils literal notranslate"><span class="pre">Config</span></code> class has been removed. It was a standalone wrapper around
@@ -562,7 +963,7 @@ object. Example:</p>
 </section>
 <section id="datafusion-52-0-0">
 <h2>DataFusion 52.0.0<a class="headerlink" href="#datafusion-52-0-0" title="Link to this heading">#</a></h2>
-<p>This version includes a major update to the <a class="reference internal" href="../contributor-guide/ffi.html#ffi"><span class="std std-ref">Python Extensions</span></a> due to upgrades
+<p>This version includes a major update to the <a class="reference internal" href="../extension-guide/index.html#ffi"><span class="std std-ref">Extension Guide</span></a> due to upgrades
 to the <a class="reference external" href="https://doc.rust-lang.org/nomicon/ffi.html">Foreign Function Interface</a>.
 Users who contribute their own <code class="docutils literal notranslate"><span class="pre">CatalogProvider</span></code>, <code class="docutils literal notranslate"><span class="pre">SchemaProvider</span></code>,
 <code class="docutils literal notranslate"><span class="pre">TableProvider</span></code> or <code class="docutils literal notranslate"><span class="pre">TableFunction</span></code> via FFI must now provide access to a
@@ -677,6 +1078,25 @@ using the specific datafusion project crates.</p>
   </div>
   <nav class="bd-toc-nav page-toc" aria-labelledby="pst-page-navigation-heading-2">
     <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion-56-0-0">DataFusion 56.0.0</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#sort-and-order-by-now-order-nulls-last-by-default"><code class="docutils literal notranslate"><span class="pre">sort</span></code> and <code class="docutils literal notranslate"><span class="pre">order_by</span></code> now order <code class="docutils literal notranslate"><span class="pre">NULLS</span> <span class="pre">LAST</span></code> by default</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion-55-0-0">DataFusion 55.0.0</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#mismatched-extension-libraries-now-fail-loudly">Mismatched extension libraries now fail loudly</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#extension-codecs-compose-instead-of-replacing">Extension codecs compose instead of replacing</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#capsule-getter-protocols-moved-to-datafusion-extensions">Capsule-getter protocols moved to <code class="docutils literal notranslate"><span class="pre">datafusion.extensions</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#sessioncontext-execute-renamed-its-second-parameter"><code class="docutils literal notranslate"><span class="pre">SessionContext.execute</span></code> renamed its second parameter</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#more-aggregate-functions-accept-distinct">More aggregate functions accept <code class="docutils literal notranslate"><span class="pre">distinct</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#chaining-keeps-options-already-set">Chaining keeps options already set</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#over-keeps-options-set-on-an-aggregate"><code class="docutils literal notranslate"><span class="pre">over()</span></code> keeps options set on an aggregate</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#python-aggregate-udfs-reject-distinct">Python aggregate UDFs reject <code class="docutils literal notranslate"><span class="pre">DISTINCT</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#percentile-functions-keep-the-sort-direction">Percentile functions keep the sort direction</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#fill-null-subset-fills-no-columns"><code class="docutils literal notranslate"><span class="pre">fill_null(subset=[])</span></code> fills no columns</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#spark-last-day-renamed-its-parameter"><code class="docutils literal notranslate"><span class="pre">spark.last_day</span></code> renamed its parameter</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#changes-to-the-datafusion-python-util-crate">Changes to the <code class="docutils literal notranslate"><span class="pre">datafusion-python-util</span></code> crate</a></li>
+</ul>
+</li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion-54-0-0">DataFusion 54.0.0</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion-53-0-0">DataFusion 53.0.0</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#datafusion-52-0-0">DataFusion 52.0.0</a></li>

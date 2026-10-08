@@ -49,6 +49,38 @@ ctx = SessionContext(config, runtime)
 print(ctx)
 ```
 
+## Setting options by key
+
+The `with_*` methods cover the common options, but any option DataFusion declares can be
+set by its fully qualified key with {py:meth}`~datafusion.SessionConfig.set`. The value is
+always a string, and is parsed according to the type the option declares, so an unknown key
+or an unparsable value raises rather than being silently ignored:
+
+```python
+config = SessionConfig().set("datafusion.execution.batch_size", "1024")
+```
+
+A whole dictionary of options can be applied at once by passing it to the
+{py:class}`~datafusion.SessionConfig` constructor, which is the shape a replayed set of
+settings usually arrives in:
+
+```python
+config = SessionConfig({"datafusion.execution.batch_size": "1024"})
+```
+
+Both routes reject the same keys, so which one you use does not change what is accepted. The
+constructor applies its entries in an unspecified order, so a dictionary with more than one
+bad key does not report a predictable one first.
+
+One trap is worth knowing about if you read settings back out of a session and replay them
+somewhere else, such as onto a worker process or into a test fixture. With
+`with_information_schema(True)`, the `information_schema.df_settings` table lists the
+`datafusion.runtime.*` keys alongside the rest, but those come from the runtime environment
+rather than from `ConfigOptions` and cannot be set this way. Feeding that table's rows back
+in verbatim will fail on the first such row, whichever route you use. Configure the runtime
+through `RuntimeEnvBuilder` instead, and skip the `datafusion.runtime.` prefix when
+replaying.
+
 ## Maximizing CPU Usage
 
 DataFusion uses partitions to parallelize work. For small queries the
@@ -95,6 +127,58 @@ df = df.repartition_by_hash(col("a"), num=16)
 
 result = df.collect()
 ```
+
+(checking_partitioning)=
+
+### Checking what the plan actually does
+
+`repartition` and `repartition_by_hash` are requests, not instructions. The optimizer is
+free to drop a repartition nothing downstream needs, to collapse partitions again for an
+operator that requires a single stream, or to substitute a repartition of its own sized by
+`target_partitions`. So the number you passed is not necessarily the number you get.
+
+{py:attr}`~datafusion.ExecutionPlan.output_partitioning` reports what the built plan does,
+as opposed to what was asked of it:
+
+```python
+from datafusion import SessionConfig, SessionContext, col, functions as f
+
+config = SessionConfig().with_target_partitions(16)
+ctx = SessionContext(config)
+
+df = ctx.read_parquet("data.parquet").repartition_by_hash(col("a"), num=8)
+plan = df.aggregate([col("a")], [f.sum(col("b"))]).execution_plan()
+
+partitioning = plan.output_partitioning
+print(partitioning.scheme)            # 'Hash'
+print(partitioning.partition_count)   # 16 -- target_partitions, not the 8 requested
+print(partitioning.hash_expressions)  # ['a@0']
+```
+
+The request for eight partitions did not survive: the optimizer inserted its own hash
+repartition at `target_partitions` instead. Had the aggregation been left off, the
+repartition would have been removed altogether and the plan would report
+`UnknownPartitioning` over the source's own partition count.
+
+`UnknownPartitioning` means the plan knows how many partitions it has but nothing about how
+rows are distributed across them, which is the ordinary case for a file scan.
+{py:attr}`~datafusion.ExecutionPlan.partition_count` gives the same count on its own when
+the scheme does not matter.
+
+Four schemes exist, but only three of them can come out of a plan you built here.
+`UnknownPartitioning` comes from a source, and `RoundRobinBatch` and `Hash` from a
+repartition — either one you asked for or one the optimizer inserted. `Range`, which spreads
+an ordered key space across partitions at chosen split points, has no request form in this
+package: `repartition` asks for round-robin, `repartition_by_hash` asks for hash, and SQL
+has no range-repartition syntax.
+
+It is still worth handling, because a plan does not have to have been built here. Both
+`datafusion-proto` and `datafusion-ffi` carry range partitioning faithfully, so
+{py:meth}`~datafusion.ExecutionPlan.from_bytes` can return a plan reporting it, as can an
+extension library whose query planner builds one — see {ref}`extension_planners`. Such a
+plan executes normally; only the split points are invisible, since
+{py:attr}`~datafusion.PhysicalPartitioning.hash_expressions` returns `None` for every scheme
+but `Hash`. Read {py:func}`repr` of the partitioning to see them.
 
 ### Benchmark Example
 
