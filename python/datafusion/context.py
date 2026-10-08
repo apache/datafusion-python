@@ -44,14 +44,15 @@ execution model.
 
 from __future__ import annotations
 
+import sys
 import uuid
 import warnings
 from typing import TYPE_CHECKING, Any, Protocol
 
-try:
-    from warnings import deprecated  # Python 3.13+
-except ImportError:
-    from typing_extensions import deprecated  # Python 3.12
+if sys.version_info >= (3, 13):
+    from warnings import deprecated
+else:
+    from typing_extensions import deprecated
 
 
 from urllib.parse import urlparse
@@ -85,7 +86,6 @@ from ._internal import expr as expr_internal
 
 if TYPE_CHECKING:
     import pathlib
-    import sys
     from collections.abc import Iterable, Sequence
 
     import pandas as pd
@@ -1292,7 +1292,7 @@ class SessionContext:
                 delimiter=delimiter,
                 schema_infer_max_records=schema_infer_max_records,
                 file_extension=file_extension,
-                file_compression_type=file_compression_type,
+                file_compression_type=file_compression_type or "",
             )
         )
 
@@ -2196,7 +2196,7 @@ class SessionContext:
                 schema_infer_max_records=schema_infer_max_records,
                 file_extension=file_extension,
                 table_partition_cols=table_partition_cols,
-                file_compression_type=file_compression_type,
+                file_compression_type=file_compression_type or "",
             )
         )
 

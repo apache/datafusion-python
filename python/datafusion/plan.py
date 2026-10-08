@@ -143,7 +143,7 @@ class LogicalPlan:  # noqa: PLW1641
         )
         return self.to_bytes()
 
-    def __eq__(self, other: LogicalPlan) -> bool:
+    def __eq__(self, other: object) -> bool:
         """Test equality."""
         if not isinstance(other, LogicalPlan):
             return False

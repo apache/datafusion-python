@@ -197,6 +197,7 @@ class ScalarUDF:
     operating on a group of rows.
     """
 
+    @overload
     def __init__(
         self,
         name: str,
@@ -204,6 +205,25 @@ class ScalarUDF:
         input_fields: list[pa.Field],
         return_field: pa.Field,
         volatility: Volatility | str,
+    ) -> None: ...
+
+    @overload
+    def __init__(
+        self,
+        name: str,
+        func: ScalarUDFExportable,
+        input_fields: None = ...,
+        return_field: None = ...,
+        volatility: None = ...,
+    ) -> None: ...
+
+    def __init__(
+        self,
+        name: str,
+        func: Callable[..., _R] | ScalarUDFExportable,
+        input_fields: list[pa.Field] | None = None,
+        return_field: pa.Field | None = None,
+        volatility: Volatility | str | None = None,
     ) -> None:
         """Instantiate a scalar user-defined function (UDF).
 
@@ -212,6 +232,12 @@ class ScalarUDF:
         if hasattr(func, "__datafusion_scalar_udf__"):
             self._udf = df_internal.ScalarUDF.from_pycapsule(func)
             return
+        if input_fields is None or return_field is None or volatility is None:
+            msg = (
+                "`input_fields`, `return_field`, and `volatility` "
+                "must be provided when `func` is callable."
+            )
+            raise TypeError(msg)
         if isinstance(input_fields, pa.DataType):
             input_fields = [input_fields]
         self._udf = df_internal.ScalarUDF(
@@ -294,7 +320,7 @@ class ScalarUDF:
     def udf(func: _PyCapsule) -> ScalarUDF: ...
 
     @staticmethod
-    def udf(*args: Any, **kwargs: Any):  # noqa: D417, C901
+    def udf(*args: Any, **kwargs: Any):  # noqa: D417
         """Create a new User-Defined Function (UDF).
 
         This class can be used both as either a function or a decorator.
@@ -365,10 +391,7 @@ class ScalarUDF:
                 msg = "`func` argument must be callable"
                 raise TypeError(msg)
             if name is None:
-                if hasattr(func, "__qualname__"):
-                    name = func.__qualname__.lower()
-                else:
-                    name = func.__class__.__name__.lower()
+                name = getattr(func, "__qualname__", func.__class__.__name__).lower()
             input_fields = data_types_or_fields_to_field_list(input_fields)
             return_field = data_type_or_field_to_field(return_field, "value")
             return ScalarUDF(
@@ -391,7 +414,7 @@ class ScalarUDF:
                 )
 
                 @functools.wraps(func)
-                def wrapper(*args: Any, **kwargs: Any) -> Callable:
+                def wrapper(*args: Any, **kwargs: Any) -> Expr:
                     return udf_caller(*args, **kwargs)
 
                 return wrapper
@@ -509,10 +532,10 @@ class AggregateUDF:
         self,
         name: str,
         accumulator: Callable[[], Accumulator] | AggregateUDFExportable,
-        input_types: list[pa.DataType] | None,
-        return_type: pa.DataType | None,
-        state_type: list[pa.DataType] | None,
-        volatility: Volatility | str | None,
+        input_types: list[pa.DataType] | None = None,
+        return_type: pa.DataType | None = None,
+        state_type: list[pa.DataType] | None = None,
+        volatility: Volatility | str | None = None,
     ) -> None:
         """Instantiate a user-defined aggregate function (UDAF).
 
@@ -959,6 +982,7 @@ class WindowUDF:
     also :py:class:`ScalarUDF` for operating on a row by row basis.
     """
 
+    @overload
     def __init__(
         self,
         name: str,
@@ -966,6 +990,25 @@ class WindowUDF:
         input_types: list[pa.DataType],
         return_type: pa.DataType,
         volatility: Volatility | str,
+    ) -> None: ...
+
+    @overload
+    def __init__(
+        self,
+        name: str,
+        func: WindowUDFExportable,
+        input_types: None = ...,
+        return_type: None = ...,
+        volatility: None = ...,
+    ) -> None: ...
+
+    def __init__(
+        self,
+        name: str,
+        func: Callable[[], WindowEvaluator] | WindowUDFExportable,
+        input_types: list[pa.DataType] | None = None,
+        return_type: pa.DataType | None = None,
+        volatility: Volatility | str | None = None,
     ) -> None:
         """Instantiate a user-defined window function (UDWF).
 
@@ -975,6 +1018,12 @@ class WindowUDF:
         if hasattr(func, "__datafusion_window_udf__"):
             self._udwf = df_internal.WindowUDF.from_pycapsule(func)
             return
+        if input_types is None or return_type is None or volatility is None:
+            msg = (
+                "`input_types`, `return_type`, and `volatility` "
+                "must be provided when `func` is callable."
+            )
+            raise TypeError(msg)
         self._udwf = df_internal.WindowUDF(
             name, func, input_types, return_type, str(volatility)
         )
@@ -1134,7 +1183,7 @@ class WindowUDF:
             msg = "`func` must implement the abstract base class WindowEvaluator"
             raise TypeError(msg)
 
-        name = name or func.__qualname__.lower()
+        name = name or WindowUDF._get_default_name(func)
         input_types = (
             [input_types] if isinstance(input_types, pa.DataType) else input_types
         )
@@ -1144,9 +1193,7 @@ class WindowUDF:
     @staticmethod
     def _get_default_name(func: Callable) -> str:
         """Get the default name for a function based on its attributes."""
-        if hasattr(func, "__qualname__"):
-            return func.__qualname__.lower()
-        return func.__class__.__name__.lower()
+        return getattr(func, "__qualname__", func.__class__.__name__).lower()
 
     @staticmethod
     def _normalize_input_types(
@@ -1333,7 +1380,7 @@ class TableFunction:
 
     @staticmethod
     def _create_table_udf_decorator(
-        name: str | None = None,
+        name: str,
         *,
         with_session: bool = False,
     ) -> Callable[[Callable[..., Any]], TableFunction]:

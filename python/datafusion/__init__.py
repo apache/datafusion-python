@@ -57,12 +57,8 @@ https://github.com/apache/datafusion-python/blob/main/skills/datafusion_python/S
 
 from __future__ import annotations
 
+import importlib.metadata as importlib_metadata
 from typing import Any
-
-try:
-    import importlib.metadata as importlib_metadata
-except ImportError:
-    import importlib_metadata  # type: ignore[import]
 
 # Public submodules
 from . import functions, ipc, object_store, substrait, unparser
