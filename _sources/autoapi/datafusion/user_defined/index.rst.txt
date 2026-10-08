@@ -360,6 +360,7 @@ Module Contents
 
 
 .. py:class:: ScalarUDF(name: str, func: collections.abc.Callable[Ellipsis, _R], input_fields: list[pyarrow.Field], return_field: pyarrow.Field, volatility: Volatility | str)
+              ScalarUDF(name: str, func: ScalarUDFExportable, input_fields: None = ..., return_field: None = ..., volatility: None = ...)
 
    Class for performing scalar user-defined functions (UDF).
 
@@ -570,7 +571,7 @@ Module Contents
 
 
 
-   .. py:method:: _create_table_udf_decorator(name: str | None = None, *, with_session: bool = False) -> collections.abc.Callable[[collections.abc.Callable[Ellipsis, Any]], TableFunction]
+   .. py:method:: _create_table_udf_decorator(name: str, *, with_session: bool = False) -> collections.abc.Callable[[collections.abc.Callable[Ellipsis, Any]], TableFunction]
       :staticmethod:
 
 
@@ -823,6 +824,7 @@ Module Contents
 
 
 .. py:class:: WindowUDF(name: str, func: collections.abc.Callable[[], WindowEvaluator], input_types: list[pyarrow.DataType], return_type: pyarrow.DataType, volatility: Volatility | str)
+              WindowUDF(name: str, func: WindowUDFExportable, input_types: None = ..., return_type: None = ..., volatility: None = ...)
 
    Class for performing window user-defined functions (UDF).
 

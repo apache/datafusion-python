@@ -219,7 +219,7 @@ Module Contents
    This constructor should not be called by the end user.
 
 
-   .. py:method:: __eq__(other: LogicalPlan) -> bool
+   .. py:method:: __eq__(other: object) -> bool
 
       Test equality.
 
