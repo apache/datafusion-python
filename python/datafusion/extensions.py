@@ -276,8 +276,10 @@ class SessionExtensionComponents:
 
     Either a :py:class:`~datafusion.user_defined.ScalarUDF` or an object
     exposing ``__datafusion_scalar_udf__``, which is wrapped with
-    :py:func:`~datafusion.udf` on the way in. The registered name comes from
-    the function itself, not from this field.
+    :py:func:`~datafusion.udf` on the way in. A bare ``PyCapsule`` is refused,
+    though :py:func:`~datafusion.udf` accepts one; declare the object that
+    exports it. The registered name comes from the function itself, not from
+    this field.
 
     One :py:meth:`~datafusion.context.SessionContext.with_extensions` call may
     not declare a name twice, whether the two claims come from one extension or

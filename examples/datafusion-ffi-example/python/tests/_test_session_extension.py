@@ -21,8 +21,8 @@ from __future__ import annotations
 
 import pyarrow as pa
 import pytest
-from datafusion import SessionContext, SessionExtensionComponents
-from datafusion_ffi_example import MyFunctionExtension
+from datafusion import SessionContext, SessionExtensionComponents, udf
+from datafusion_ffi_example import IsNullUDF, MyFunctionExtension
 
 
 def _session():
@@ -94,6 +94,30 @@ def test_installing_the_library_twice_is_refused():
 
     with pytest.raises(KeyError):
         ctx.udf("my_custom_is_null")
+
+
+def test_a_bare_capsule_is_not_a_declaration():
+    """A declared function is an object, even though ``udf`` takes a capsule.
+
+    The capsule itself is fine -- ``udf`` wraps it -- so the refusal is the
+    declaration rule, not a bad capsule.
+    """
+    ctx = SessionContext()
+    capsule = IsNullUDF().__datafusion_scalar_udf__()
+
+    class CapsuleExtension:
+        def __datafusion_session_components__(
+            self, ctx: SessionContext
+        ) -> SessionExtensionComponents:
+            return SessionExtensionComponents(udfs=(capsule,))
+
+    with pytest.raises(TypeError, match=r"__datafusion_scalar_udf__"):
+        ctx.with_extensions(CapsuleExtension())
+
+    with pytest.raises(KeyError):
+        ctx.udf("my_custom_is_null")
+
+    assert udf(capsule).name == "my_custom_is_null"
 
 
 def test_a_failure_after_the_hook_registers_nothing():
