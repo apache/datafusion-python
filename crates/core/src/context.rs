@@ -1720,9 +1720,14 @@ impl PySessionContext {
     ///
     /// The second phase, run on the handle carrying the completed chains —
     /// `session` is that same handle as the Python-level wrapper, which is
-    /// what each `__datafusion_session_planner__` hook receives. The hooks
-    /// run first, **in argument order**, each handed the planner built so
-    /// far as a capsule; a hook may hand back an object exposing
+    /// what each `__datafusion_session_planner__` hook receives.
+    ///
+    /// `extensions` must already be narrowed to the planner hooks: every entry
+    /// is called, with no check of its own. The Python caller decides which
+    /// arguments are hooks.
+    ///
+    /// The hooks run first, **in argument order**, each handed the planner
+    /// built so far as a capsule; a hook may hand back an object exposing
     /// `__datafusion_query_planner__` or a raw capsule, and each return is
     /// imported here so a malformed planner surfaces at the hook that
     /// produced it rather than at the install. Returning `None` contributes
@@ -1757,9 +1762,6 @@ impl PySessionContext {
         // place rather than wrapping the session's default in an FFI hop.
         let mut planner: Option<FFI_QueryPlanner> = None;
         for extension in &extensions {
-            if !extension.hasattr("__datafusion_session_planner__")? {
-                continue;
-            }
             let fallback = match &planner {
                 Some(ffi) => create_query_planner_capsule(py, ffi)?,
                 None => slf.borrow().__datafusion_query_planner__(py, None)?,

@@ -1216,10 +1216,9 @@ def test_with_extensions_ignores_a_planner_attribute_set_to_none(ctx):
     with the other called the ``None``: ``'NoneType' object is not callable``,
     naming neither the extension nor the hook.
 
-    ``_commit_extensions`` still carries a Rust-side ``hasattr``, and the
-    Python caller now hands it a list already narrowed by ``isinstance``. Two
-    checks means one of them decides, and this pins which: a refactor that
-    passes the unfiltered arguments through reintroduces the failure, and
+    ``_commit_extensions`` calls every entry it is handed, so the
+    ``isinstance`` filter in the Python caller is the only check. A refactor
+    that passes the unfiltered arguments through reintroduces the failure, and
     nothing else in this file notices.
     """
 
