@@ -312,7 +312,7 @@ the one case a rename fixes. Collisions are keyed on position rather than on
 object identity so that passing one extension twice reads as the caller's
 duplicate that it is, rather than as a bundle colliding with itself.
 
-Three cases this does *not* catch:
+Four cases this does *not* catch:
 
 - **Different kinds never collide.** Names are compared within a kind, so a
   scalar function and an aggregate may both be called `normalize`.
@@ -326,6 +326,10 @@ Three cases this does *not* catch:
   shadowing rule above, applied to something you may not have meant to shadow.
   Splitting colliding bundles across two calls therefore does not resolve the
   collision; it hides it. Use two sessions.
+- **Aliases are not compared.** DataFusion registers a function under each of
+  its aliases as well as its name, but only the names are checked. A function
+  whose alias matches another declared function's name replaces it, or is
+  replaced by it, with nothing raised.
 
 Your caller cannot rename your function, so stay out of the way: prefix the
 names with something tied to your library.
