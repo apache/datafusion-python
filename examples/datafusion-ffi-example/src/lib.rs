@@ -33,6 +33,7 @@ use crate::window_udf::MyRankUDF;
 pub(crate) mod aggregate_udf;
 pub(crate) mod catalog_provider;
 pub(crate) mod config;
+pub(crate) mod foreign_plan_workaround;
 pub(crate) mod logical_extension_codec;
 pub(crate) mod name_only_codec;
 pub(crate) mod physical_extension_codec;
