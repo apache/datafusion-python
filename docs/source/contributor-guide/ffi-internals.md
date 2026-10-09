@@ -64,13 +64,10 @@ would close the cycle
 `SessionContext -> catalog -> FFI provider -> FFI codec -> SessionContext` and
 leak it.
 
-`SessionContext.enable_url_table` is the one exception. It clones the
-underlying `SessionContext`, so the returned context has an allocation of its
-own and must not outlive the receiver. It also forks the session's state while
-keeping its id, so two handles report one `session_id()` with divergent
-configuration. That is a bug rather than a design, tracked in
-[apache/datafusion-python#1708](https://github.com/apache/datafusion-python/issues/1708);
-do not copy the pattern.
+`SessionContext.enable_url_table` follows the same rule. It replaces only the
+catalog list through `state_ref()` and returns a handle sharing the original
+allocation. The idempotence check and catalog replacement share one write lock,
+so concurrent calls cannot nest wrappers or overwrite a newer catalog list.
 
 (ffi_internals_rebinding)=
 
