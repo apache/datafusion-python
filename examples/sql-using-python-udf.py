@@ -61,4 +61,5 @@ result_df = ctx.sql("select a, is_null(b) as b_is_null from t")
 # | 2 | true      |
 # | 3 | false     |
 # +---+-----------+
+result_df.show()
 assert result_df.to_pydict()["b_is_null"] == [False, True, False]

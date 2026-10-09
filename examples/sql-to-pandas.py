@@ -34,6 +34,7 @@ df = ctx.sql(
 
 # convert to Pandas
 pandas_df = df.to_pandas()
+print(pandas_df)
 
 # create a chart
 fig = pandas_df.plot(

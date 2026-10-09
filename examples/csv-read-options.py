@@ -17,7 +17,22 @@
 
 """Example demonstrating CsvReadOptions usage."""
 
+import gzip
+import shutil
+import tempfile
+from pathlib import Path
+
 from datafusion import CsvReadOptions, SessionContext
+
+# This example is self-contained: it writes its own small CSV file, plus a
+# gzipped copy, into a temporary directory instead of expecting a
+# ``data.csv`` file that is not part of this repository.
+tmp_dir = Path(tempfile.mkdtemp())
+csv_path = tmp_dir / "data.csv"
+csv_path.write_text("a,b,c\n1,2,3\n4,5,6\n7,8,9\n")
+gz_path = tmp_dir / "data.csv.gz"
+with csv_path.open("rb") as f_in, gzip.open(gz_path, "wb") as f_out:
+    shutil.copyfileobj(f_in, f_out)
 
 # Create a SessionContext
 ctx = SessionContext()
@@ -25,7 +40,7 @@ ctx = SessionContext()
 # Example 1: Using CsvReadOptions with default values
 print("Example 1: Default CsvReadOptions")
 options = CsvReadOptions()
-df = ctx.read_csv("data.csv", options=options)
+df = ctx.read_csv(str(csv_path), options=options)
 
 # Example 2: Using CsvReadOptions with custom parameters
 print("\nExample 2: Custom CsvReadOptions")
@@ -36,7 +51,7 @@ options = CsvReadOptions(
     schema_infer_max_records=1000,
     file_extension=".csv",
 )
-df = ctx.read_csv("data.csv", options=options)
+df = ctx.read_csv(str(csv_path), options=options)
 
 # Example 3: Using the builder pattern (recommended for readability)
 print("\nExample 3: Builder pattern")
@@ -49,7 +64,7 @@ options = (
     .with_truncated_rows(False)  # noqa: FBT003
     .with_newlines_in_values(True)  # noqa: FBT003
 )
-df = ctx.read_csv("data.csv", options=options)
+df = ctx.read_csv(str(csv_path), options=options)
 
 # Example 4: Advanced options
 print("\nExample 4: Advanced options")
@@ -64,18 +79,18 @@ options = (
     .with_file_compression_type("gzip")  # Read gzipped CSV
     .with_file_extension(".gz")
 )
-df = ctx.read_csv("data.csv.gz", options=options)
+df = ctx.read_csv(str(gz_path), options=options)
 
 # Example 5: Register CSV table with options
 print("\nExample 5: Register CSV table")
 options = CsvReadOptions().with_has_header(True).with_delimiter(",")  # noqa: FBT003
-ctx.register_csv("my_table", "data.csv", options=options)
+ctx.register_csv("my_table", str(csv_path), options=options)
 df = ctx.sql("SELECT * FROM my_table")
 
 # Example 6: Backward compatibility (without options)
 print("\nExample 6: Backward compatibility")
 # Still works the old way!
-df = ctx.read_csv("data.csv", has_header=True, delimiter=",")
+df = ctx.read_csv(str(csv_path), has_header=True, delimiter=",")
 
 print("\nAll examples completed!")
 print("\nFor all available options, see the CsvReadOptions documentation:")
