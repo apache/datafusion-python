@@ -43,7 +43,7 @@ pub(crate) struct IsNullUDF {
 #[pymethods]
 impl IsNullUDF {
     #[new]
-    fn new() -> Self {
+    pub(crate) fn new() -> Self {
         Self {
             signature: Signature::new(TypeSignature::Any(1), Volatility::Immutable),
         }

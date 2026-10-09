@@ -40,7 +40,7 @@ pub(crate) struct MySumUDF {
 #[pymethods]
 impl MySumUDF {
     #[new]
-    fn new() -> PyResult<Self> {
+    pub(crate) fn new() -> PyResult<Self> {
         Ok(Self {
             inner: Arc::new(Sum::new()),
         })

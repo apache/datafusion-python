@@ -117,37 +117,35 @@ prefer `with_extensions` — is documented at {ref}`planner_codec_rebinding`.
 
 `with_extensions` promises that a bundle which raises leaves the session as it
 was, apart from anything a hook writes to the context it is handed
-({ref}`extension_bundles_transaction`). Keeping that promise is an ordering constraint on the implementation, not
-a property of any one step, because the planner is bound on the shared
-`SessionState` rather than on the returned handle.
+({ref}`extension_bundles_transaction`). Keeping that promise is an ordering
+constraint on the implementation, not a property of any one step, because the
+components a bundle declares do not all live on the returned handle — functions
+are registered on the shared `SessionState`, and the planner is bound there too.
 
 A call therefore splits into four steps, of which only the last writes:
 
-1. **Collect.** Every `__datafusion_session_components__` runs and its codecs
-   are gathered. Nothing is installed yet, so a hook that raises here has
-   touched nothing.
+1. **Collect.** Every `__datafusion_session_components__` runs and its
+   components are gathered. Nothing is installed yet, so a hook that raises here
+   has touched nothing.
 2. **Chains.** The codecs are assembled into the returned handle. Codec chains
    live on that handle rather than on the session, so this step writes nothing
    to the session even though it can fail on a bad capsule or a duplicate id.
-3. **Resolve.** Every `__datafusion_session_planner__` runs, in argument order,
-   against the completed chains, and each supplied planner is exported to a
-   capsule. Every hook that can raise has run by the end of this step.
-4. **Commit.** The accumulated planner is re-imported from its capsule and
-   bound, in a single `SessionState` rebuild. The bind is skipped entirely when
-   the call installed nothing, so an empty call does not drag a planner sitting
-   on another handle's codecs onto this one's.
+3. **Resolve.** Every declared function is wrapped and every name is checked.
+   Then every `__datafusion_session_planner__` runs, in argument order, against
+   the completed chains, and each supplied planner is imported as it is
+   returned.
+4. **Commit.** The planner is bound, then the declared functions are
+   registered with `register_udf`, `register_udaf` and `register_udwf` — the
+   same methods a caller would use, and three that cannot fail. The bind is
+   skipped entirely when the call installed no planner and no codec, so an
+   empty call does not drag a planner sitting on another handle's codecs onto
+   this one's.
 
-Only step 4 touches the session, and it is not itself infallible:
-`_install_extension_planner` runs `ffi_query_planner_from_pycapsule` before it
-calls `set_session_query_planner`, which cannot fail. The property that keeps
-the promise is therefore about order, not about any step being incapable of
-raising — every fallible operation, including the ones inside the commit,
-completes before the first write.
-
-That is the rule for the next field added to `SessionExtensionComponents`, not
-only a description of the current code: a new kind of component must do its
-fallible work — importing a capsule, resolving a name — before anything is
-written, so no failure can leave the session half-updated.
+Only step 4 touches the session, and every fallible operation completes before
+its first write. This is a rule for the next field added to
+`SessionExtensionComponents`, not only a description of the current code: a new
+kind of component must do its fallible work — importing a capsule, resolving a
+name — in step 3, so no failure can leave the session half-updated.
 
 There would be nothing to roll back to if one did. The returned handle shares one
 session with the receiver, so the damage is visible from every other handle;

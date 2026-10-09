@@ -991,7 +991,8 @@ class PlannerOnlyExtension:
         return self.planner
 
 
-def test_with_extensions_nests_planners_in_argument_order():
+@pytest.mark.parametrize("none_between", [False, True], ids=["adjacent", "none"])
+def test_with_extensions_nests_planners_in_argument_order(none_between: bool):
     """Two planner-shipping libraries compose instead of displacing each other.
 
     This is the four-library case: A and C contribute codecs, B an optimizing
@@ -999,12 +1000,19 @@ def test_with_extensions_nests_planners_in_argument_order():
     for one query, which is only possible if D delegates to B rather than
     replacing it — a session holds exactly one planner, so the nesting is the
     only way both are reachable.
+
+    With a hook returning ``None`` between the two, ``outer`` must still be
+    handed ``inner``'s planner. A host that reset the chain on ``None`` would
+    hand it the session's planner instead, and ``inner`` would never run.
+    Pure Python cannot see this: a capsule is opaque, so only a planner that
+    counts its calls tells the two fallbacks apart.
     """
     config = SessionConfig().with_extension(MyPlannerConfig(max_rows=3))
     codecs = ProviderCodecsExtension()
     inner = PlannerOnlyExtension()
     outer = PlannerOnlyExtension()
-    ctx = SessionContext(config).with_extensions(codecs, inner, outer)
+    between = (NoOpExtension(),) if none_between else ()
+    ctx = SessionContext(config).with_extensions(codecs, inner, *between, outer)
     ctx.register_table("numbers", MyTableProvider(1, 6, 1))
 
     batches = ctx.sql('SELECT "A" FROM numbers ORDER BY "A"').collect()
