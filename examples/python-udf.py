@@ -37,6 +37,7 @@ batch = pa.RecordBatch.from_arrays(
 df = ctx.create_dataframe([[batch]])
 
 df = df.select(is_null_arr(f.col("a")))
+df.show()
 
 result = df.collect()[0]
 
