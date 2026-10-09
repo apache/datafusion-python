@@ -19,6 +19,10 @@
 
 # DataFusion Python FFI query planner example
 
+**What this is:** A query planner extension that adds a configurable global limit to query plans.
+**If you are learning the protocol:** Read the [Extension Guide](https://datafusion.apache.org/python/extension-guide/index.html).
+**To run the demo:** `uv run python examples/datafusion-ffi-query-planner-example/run_demo.py` (after `uv run maturin develop` in this directory).
+
 This crate is an independent query-planner Python extension. Together with [`../datafusion-ffi-example`](../datafusion-ffi-example/) it demonstrates a real three-library plan exchange:
 
 - **A — `datafusion-python`:** owns the session and final execution.
