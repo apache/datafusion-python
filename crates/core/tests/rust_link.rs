@@ -15,7 +15,19 @@
 // specific language governing permissions and limitations
 // under the License.
 
-fn main() {
-    #[cfg(feature = "extension-module")]
-    pyo3_build_config::add_extension_module_link_args();
+use datafusion_python::context::PySessionContext;
+use pyo3::prelude::*;
+
+// An integration test is a separate executable consuming the rlib. Exercise
+// Python calls as well as Rust construction so linking must resolve Py_* symbols.
+#[test]
+fn rust_consumer_can_execute_python_bindings() -> PyResult<()> {
+    Python::initialize();
+    Python::attach(|py| {
+        let context = Bound::new(py, PySessionContext::new(None, None)?)?;
+        let dataframe = context.call_method1("sql_with_options", ("SELECT 1 AS value",))?;
+        let count = dataframe.call_method0("count")?.extract::<usize>()?;
+        assert_eq!(count, 1);
+        Ok(())
+    })
 }

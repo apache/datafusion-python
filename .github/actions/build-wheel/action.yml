@@ -60,13 +60,15 @@ runs:
       run: |
         set -euo pipefail
         FEATURES="${{ inputs.features }}"
+        # All wheels need extension-module, including builds that disable defaults.
+        FEATURES="extension-module${FEATURES:+,${FEATURES}}"
         TAG="${{ inputs.python-tag }}"
         if [ "$TAG" = "abi3" ]; then
           # Default features include the `abi3` cargo feature.
           # One wheel covers Python 3.10..3.14 (GIL builds only).
           BUILD_ARGS="--features ${FEATURES}"
         else
-          # Free-threaded build: disable abi3, force mimalloc back in, pin interpreter.
+          # Disable abi3, restore wheel features, and pin the free-threaded interpreter.
           if [ "${RUNNER_OS:-}" = "Windows" ]; then
             # Windows free-threaded builds ship as `python.exe` (no `tN`
             # suffix). Resolve sys.executable so the path is independent of
