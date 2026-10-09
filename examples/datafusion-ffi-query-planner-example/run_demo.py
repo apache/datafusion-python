@@ -8,6 +8,8 @@ planners nesting.
 
 import sys
 
+from datafusion import SessionConfig, SessionContext
+
 try:
     from datafusion_ffi_query_planner_example import (
         MyPlannerConfig,
@@ -15,8 +17,6 @@ try:
     )
 except ImportError:
     sys.exit("build the extension first:\n  uv run maturin develop\nSee README.md.")
-
-from datafusion import SessionConfig, SessionContext  # noqa: I001, E402
 
 
 print("1. logical plan")

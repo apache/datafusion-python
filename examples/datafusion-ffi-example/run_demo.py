@@ -8,6 +8,8 @@ decoded a second time.
 
 import sys
 
+from datafusion import LogicalPlan, SessionConfig, SessionContext, udf
+
 try:
     from datafusion_ffi_example import (
         IsNullUDF,
@@ -18,8 +20,6 @@ try:
     )
 except ImportError:
     sys.exit("build the extension first:\n  uv run maturin develop\nSee README.md.")
-
-from datafusion import LogicalPlan, SessionConfig, SessionContext, udf  # noqa: I001, E402
 
 
 print("1. table provider")
