@@ -321,11 +321,7 @@ def concat_ws(separator: str, *args: Expr) -> Expr:
 
 ### Category C: Arguments That Should Accept str as Column Name
 
-In some contexts a string argument naturally refers to a column name rather than a literal. This is the pattern used by DataFrame methods.
-
 **Type hint pattern:** `Expr | str`
-
-**When to use:** Only when the string contextually means a column name (rare in `functions.py`, more common in DataFrame methods).
 
 ```python
 # Use _to_raw_expr() from expr.py for this pattern
@@ -336,7 +332,21 @@ def some_function(column: Expr | str) -> Expr:
     return Expr(f.some_function(raw))
 ```
 
-**IMPORTANT:** In `functions.py`, string arguments almost never mean column names. Functions operate on expressions, and column references should use `col()`. Category C applies mainly to DataFrame methods and context APIs, not to scalar/aggregate/window functions. Do NOT convert string arguments to column expressions in `functions.py` unless there is a very clear reason to do so.
+#### Column name or literal?
+
+A bare string has to be read either as a column name or as a literal value. Decide by asking what a string *literal* would mean in that position:
+
+1. **The position only makes sense as column data.** A constant there is meaningless, so a string can only be a column name. Accept `Expr | str` and convert with `_to_raw_expr()`. This covers:
+   - the column inputs of aggregate functions (`sum("a")`, `corr("a", "b")`, `grouping("a")`), because aggregating a constant string is never what the caller wants
+   - the column arguments of DataFrame and context methods (`select`, `sort`, `aggregate`)
+2. **The position is a parameter of the operation, not its data.** Delimiters, patterns, date parts, format strings and `string_agg`'s `delimiter` are examples. A string here is a literal, so use Category A or B.
+3. **The position is the data of a scalar or array function.** A literal string is a valid, common input there (`upper("abc")`, `concat(col("a"), "-")`), so a bare string is ambiguous. Keep it `Expr` only and let the caller write `col()` or `lit()`.
+
+If you can't tell which rule applies, use rule 3.
+
+SQL's `count(*)` is a special value, not a column name: `count("*")` means `count()`.
+
+Window functions have not been converted to rule 1 yet. Their inputs (for example `lead`'s `arg`) are still `Expr` only.
 
 ## Implementation Steps
 
@@ -430,7 +440,7 @@ from datafusion.expr import coerce_to_expr, coerce_to_expr_or_none
 
 ## What NOT to Change
 
-- **Do not change arguments that represent data columns.** If an argument is the primary data being operated on (e.g., the `string` in `left(string, n)` or the `array` in `array_sort(array)`), it should remain `Expr` only. Users should use `col()` for column references.
+- **Do not change the data arguments of scalar and array functions.** If an argument is the primary data being operated on (e.g., the `string` in `left(string, n)` or the `array` in `array_sort(array)`), a string there could be a literal, so it should remain `Expr` only (rule 3 under Category C). Aggregate column inputs are different: see rule 1.
 - **Do not change variadic `*args: Expr` parameters.** These represent multiple expressions and should stay as `Expr`.
 - **Do not change arguments where the coercion is ambiguous.** If it is unclear whether a string should be a column name or a literal, leave it as `Expr` and let the user be explicit.
 - **Do not add coercion logic to simple aliases.** If a function is just `return other_function(...)`, the primary function handles coercion. However, you **must update the alias's type hints** to match the primary function's signature so that type checkers and documentation accurately reflect what the alias accepts.
