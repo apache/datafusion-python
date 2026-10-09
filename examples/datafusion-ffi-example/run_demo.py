@@ -5,6 +5,7 @@ Walks the conformance matrix in numbered sections: table provider, functions,
 catalog provider, config extension, codec round-trip, then the same bytes
 decoded a second time.
 """
+
 import sys
 
 try:
@@ -18,9 +19,7 @@ try:
 except ImportError:
     sys.exit("build the extension first:\n  uv run maturin develop\nSee README.md.")
 
-from datafusion import LogicalPlan, SessionConfig, SessionContext, udf
-
-
+from datafusion import LogicalPlan, SessionConfig, SessionContext, udf  # noqa: I001, E402
 
 
 print("1. table provider")
@@ -38,7 +37,9 @@ ctx.sql("SELECT * FROM ffi_catalog.my_schema.my_table").show()
 
 print("\n4. config extension")
 config = MyConfig()
-config = SessionConfig({"datafusion.catalog.information_schema": "true"}).with_extension(config)
+config = SessionConfig(
+    {"datafusion.catalog.information_schema": "true"}
+).with_extension(config)
 config.set("my_config.baz_count", "42")
 ctx2 = SessionContext(config)
 ctx2.sql("SHOW my_config.baz_count;").show()

@@ -5,6 +5,7 @@ Prints plans, showing the logical plan handed to the planner, the physical
 plan returned, the effect of SET ffi_query_planner.max_rows, and two
 planners nesting.
 """
+
 import sys
 
 try:
@@ -15,16 +16,16 @@ try:
 except ImportError:
     sys.exit("build the extension first:\n  uv run maturin develop\nSee README.md.")
 
-from datafusion import SessionConfig, SessionContext
-
-
+from datafusion import SessionConfig, SessionContext  # noqa: I001, E402
 
 
 print("1. logical plan")
 config = SessionConfig().with_extension(MyPlannerConfig(max_rows=5))
 ctx = SessionContext(config)
 
-ctx.sql("CREATE TABLE t AS SELECT * FROM (VALUES (1), (2), (3), (4), (5), (6), (7)) AS t(a)")
+ctx.sql(
+    "CREATE TABLE t AS SELECT * FROM (VALUES (1), (2), (3), (4), (5), (6), (7)) AS t(a)"
+)
 df = ctx.sql("SELECT * FROM t")
 print(df.logical_plan().display_indent())
 

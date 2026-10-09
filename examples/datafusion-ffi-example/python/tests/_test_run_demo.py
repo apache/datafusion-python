@@ -5,7 +5,7 @@ from pathlib import Path
 
 def test_run_demo():
     script = Path(__file__).parent.parent.parent / "run_demo.py"
-    result = subprocess.run(
+    result = subprocess.run(  # noqa: S603
         [sys.executable, str(script)],
         capture_output=True,
         text=True,
