@@ -56,6 +56,14 @@ publish. Each links to the page that explains it.
 - [ ] **You round-trip a plan in a test and assert *your* codec did the work.**
       Both being installed does not mean your node reached you.
       → {ref}`extension_codec_order`
+- [ ] **You ship a logical codec too, if you contribute a table provider.** A
+      physical codec is not enough: an installed query planner receives the
+      logical plan, which holds your provider, and the session fails to plan
+      without one. → {ref}`extension_codec_provider_logical`
+- [ ] **You decode in a *different process* in at least one test.** A codec
+      that parks the object in a process-global map passes every in-process
+      round trip and fails the first real one.
+      → {ref}`extension_codec_durable_metadata`
 
 ## Bundles and planners
 
@@ -70,8 +78,15 @@ publish. Each links to the page that explains it.
       `with_extensions` refuses a capsule, because there would be nothing to
       name the codec by. → {ref}`extension_bundles_codecs_are_objects`
 - [ ] **Your planner hook wraps `fallback` and delegates to it.** Ignoring it
-      replaces every layer beneath you, which is legal but not composable.
+      replaces every layer beneath you, which is legal but not composable —
+      unless your planner rewrites the plan, as in the next item.
       → {ref}`extension_bundles`
+- [ ] **Your planner plans for itself if it rewrites the plan**, leaving
+      `fallback` unused. The two are exclusive: delegating hands planning back
+      to the host and returns nodes you can neither downcast nor split.
+      Planning for yourself then means supplying your *own* optimizer rules,
+      because a session that arrived over FFI carries the host's.
+      → {ref}`planner_host_optimizer_rules`
 - [ ] **Your planner hook returns `None`, not `fallback`, when it has nothing
       to contribute.** Returning `fallback` installs the session's own planner
       as a foreign one and adds an FFI hop that was not there.
@@ -94,6 +109,13 @@ publish. Each links to the page that explains it.
       process-local token. The examples in this repository use tokens to make
       ownership observable; that is a demonstration, not a pattern.
       → {ref}`extension_codec_durable_metadata`
-- [ ] **You have integration tests across a real FFI boundary.** The two
-      example crates in this repository are the pattern: build the cdylib,
-      install the wheel, then exercise it from Python.
+- [ ] **You have integration tests across a real FFI boundary.** The example
+      trees in this repository are the pattern: build the cdylib, install the
+      wheel, then exercise it from Python. `examples/distributed` additionally
+      spawns worker processes, which is the only way to catch a codec that
+      only works in the process that wrote it.
+- [ ] **If you ship an engine, say which worker-parity items you handle** and
+      which you leave to your users. A `SessionContext` cannot be snapshotted
+      and restored elsewhere, so every one of them is somebody's job, and your
+      users cannot tell whose from the outside.
+      → {ref}`distributed_worker_parity`

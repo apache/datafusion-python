@@ -51,22 +51,24 @@ Here is a direct link to the file used in the examples:
 
 ### Rust FFI Extensions
 
-- [Table providers, functions, and codecs](./datafusion-ffi-example/)
-- [Independent query planner and planner configuration](./datafusion-ffi-query-planner-example/)
+Start with the worked example; the other two are focused test beds that
+exercise one part of the protocol hard rather than reading as a tutorial.
 
-These two crates form a three-library interoperability example with
-`datafusion-python`. They are separate shared libraries so the tests exercise real FFI
-type and codec boundaries rather than same-library Rust downcasts.
+- [**Three libraries in one distributed query**](./distributed/) — a UDF
+  library, a table provider with its own scan node, and a toy engine that
+  splits the plan and runs each partition in a separate process. Read this one
+  first.
+- [Capsule protocol conformance](./datafusion-ffi-example/) — table providers,
+  catalogs, functions, config, and codecs, one of each.
+- [Query planner composition](./datafusion-ffi-query-planner-example/) — what
+  happens when more than one library contributes a planner, and how they nest.
+
+Each is a separate shared library, so the tests exercise real FFI type and
+codec boundaries rather than same-library Rust downcasts.
 
 ### Substrait Support
 
 - [Serialize query plans using Substrait](./substrait.py)
-
-### Executing SQL against DataFrame Libraries (Experimental)
-
-- [Executing SQL on Polars](./sql-on-polars.py)
-- [Executing SQL on Pandas](./sql-on-pandas.py)
-- [Executing SQL on cuDF](./sql-on-cudf.py)
 
 ## TPC-H Examples
 
