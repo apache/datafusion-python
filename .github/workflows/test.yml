@@ -16,8 +16,9 @@
 # under the License.
 
 # Reusable workflow for running tests.
-# Single matrix covers both GIL (abi3 wheel) and free-threaded
-# (per-interpreter wheels) builds.
+# Single matrix covers GIL (abi3 wheel), free-threaded (per-interpreter
+# wheels) and 3.15+ (abi3t wheel, loadable on both GIL and free-threaded
+# builds) interpreters.
 
 name: Test
 
@@ -43,8 +44,12 @@ jobs:
           - { python-version: "3.12", wheel-tag: "abi3", freethreaded: false }
           - { python-version: "3.13", wheel-tag: "abi3", freethreaded: false }
           - { python-version: "3.14", wheel-tag: "abi3", freethreaded: false }
-          # Free-threaded builds — one wheel per interpreter.
+          - { python-version: "3.15", wheel-tag: "abi3", freethreaded: false }
+          # The abi3t wheel (PEP 803) loads on both GIL and free-threaded 3.15+.
+          - { python-version: "3.15", wheel-tag: "abi3t", freethreaded: false }
+          # Free-threaded builds — one wheel per interpreter (abi3t covers 3.15+).
           - { python-version: "3.14t", wheel-tag: "3.14t", freethreaded: true }
+          - { python-version: "3.15t", wheel-tag: "abi3t", freethreaded: true }
     steps:
       - uses: actions/checkout@v7
 
