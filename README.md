@@ -43,7 +43,7 @@ DataFusion's Python bindings can be used as a foundation for building new data s
 - Experimental support for transpiling SQL queries to DataFrame calls with Polars, Pandas, and cuDF.
 
 For tips on tuning parallelism, see
-[Maximizing CPU Usage](docs/source/user-guide/configuration.rst#maximizing-cpu-usage)
+[Maximizing CPU Usage](docs/source/user-guide/configuration.md#maximizing-cpu-usage)
 in the configuration guide.
 
 ## Example Usage
