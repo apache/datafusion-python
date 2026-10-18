@@ -538,7 +538,7 @@ requires-dist = [
 dev = [
     { name = "arro3-core", specifier = "==0.6.5" },
     { name = "codespell", specifier = "==2.4.1" },
-    { name = "maturin", specifier = ">=1.8.1" },
+    { name = "maturin", specifier = ">=1.14.0" },
     { name = "nanoarrow", specifier = "==0.8.0" },
     { name = "numpy", marker = "python_full_version < '3.14'", specifier = ">1.25.0" },
     { name = "numpy", marker = "python_full_version >= '3.14'", specifier = ">=2.3.2" },

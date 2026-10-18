@@ -81,6 +81,10 @@ default = ["mimalloc", "abi3"]
 # Mutually exclusive with free-threaded interpreters (cp313t / cp314t); the
 # free-threaded wheel build must pass --no-default-features.
 abi3 = ["pyo3/abi3", "pyo3/abi3-py310"]
+# PEP 803 stable ABI — single wheel covers Python 3.15+ on both GIL and
+# free-threaded builds. Requires a 3.15+ host interpreter and maturin >= 1.14.
+# Enable via `--no-default-features` so it is not combined with `abi3`.
+abi3t = ["pyo3/abi3t", "pyo3/abi3t-py315"]
 protoc = ["datafusion-substrait/protoc"]
 substrait = ["dep:datafusion-substrait"]
 
