@@ -28,8 +28,8 @@ class Dialect:
     """The SQL dialect an :py:class:`Unparser` writes.
 
     The dialect decides how the generated SQL is spelled - most visibly how
-    identifiers are quoted - so the same logical plan produces different SQL
-    text for each dialect.
+    identifiers are quoted - so the same logical plan can produce different SQL
+    text depending on the dialect.
     """
 
     def __init__(self, dialect: unparser_internal.Dialect) -> None:
@@ -40,7 +40,7 @@ class Dialect:
     def default() -> "Dialect":
         """Create a new default dialect.
 
-        This dialect leaves identifiers unquoted.
+        This dialect quotes identifiers when needed.
 
         Example usage:
 
