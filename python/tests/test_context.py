@@ -25,18 +25,18 @@ import pyarrow as pa
 import pyarrow.dataset as ds
 import pytest
 from datafusion import (
-    CsvReadOptions,
     DataFrame,
     RuntimeEnvBuilder,
     SessionConfig,
     SessionContext,
     SessionExtensionComponents,
-    Table,
     column,
     literal,
     udf,
 )
+from datafusion.catalog import Table
 from datafusion.context import SQLOptions
+from datafusion.options import CsvReadOptions
 
 
 def test_create_context_no_args():
@@ -531,7 +531,8 @@ def test_deregister_udtf():
     import pyarrow.dataset as ds
 
     ctx = SessionContext()
-    from datafusion import Table, udtf
+    from datafusion import udtf
+    from datafusion.catalog import Table
 
     class MyTable:
         def __call__(self):
@@ -1696,7 +1697,7 @@ def test_create_dataframe_with_global_ctx(batch):
 
 def test_csv_read_options_builder_pattern():
     """Test CsvReadOptions builder pattern."""
-    from datafusion import CsvReadOptions
+    from datafusion.options import CsvReadOptions
 
     options = (
         CsvReadOptions()

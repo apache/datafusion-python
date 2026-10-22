@@ -376,7 +376,7 @@ class DataFrame:
     """Two dimensional table representation of data.
 
     DataFrame objects are iterable; iterating over a DataFrame yields
-    :class:`datafusion.RecordBatch` instances lazily.
+    :class:`~datafusion.record_batch.RecordBatch` instances lazily.
 
     See :ref:`user_guide_concepts` in the online documentation for more information.
     """
@@ -390,7 +390,7 @@ class DataFrame:
         self.df = df
 
     def into_view(self, temporary: bool = False) -> Table:
-        """Convert ``DataFrame`` into a :class:`~datafusion.Table`.
+        """Convert ``DataFrame`` into a :class:`~datafusion.catalog.Table`.
 
         Examples:
             >>> from datafusion import SessionContext

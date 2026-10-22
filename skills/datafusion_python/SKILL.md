@@ -293,7 +293,7 @@ when you may break out of the loop early. `execute_stream()` pulls one
 whole result up front.
 
 ```python
-# Single-partition stream; batch is a datafusion.RecordBatch
+# Single-partition stream; batch is a datafusion.record_batch.RecordBatch
 stream = df.execute_stream()
 for batch in stream:
     process(batch.to_pyarrow())         # convert to pa.RecordBatch if needed

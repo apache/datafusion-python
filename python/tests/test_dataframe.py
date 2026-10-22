@@ -30,7 +30,6 @@ import pyarrow.parquet as pq
 import pytest
 from datafusion import (
     DataFrame,
-    RecordBatch,
     SessionContext,
     column,
     literal,
@@ -59,6 +58,7 @@ from datafusion.dataframe_formatter import (
     reset_formatter,
 )
 from datafusion.expr import EXPR_TYPE_ERROR, Window, WindowFrame
+from datafusion.record_batch import RecordBatch
 from pyarrow.csv import write_csv
 
 pa_cffi = pytest.importorskip("pyarrow.cffi")

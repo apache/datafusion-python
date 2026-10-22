@@ -427,7 +427,8 @@ argument on every invocation. Use it to look up registered tables,
 UDFs, or session configuration from inside the callback.
 
 ```python
-from datafusion import SessionContext, Table, udtf
+from datafusion import SessionContext, udtf
+from datafusion.catalog import Table
 from datafusion.context import TableProviderExportable
 import pyarrow as pa
 import pyarrow.dataset as ds

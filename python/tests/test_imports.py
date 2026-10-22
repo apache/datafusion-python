@@ -228,21 +228,14 @@ def test_root_all_matches_curated_surface():
     """Verify package root __all__ contains only common entry points."""
     expected = [
         "Accumulator",
-        "AggregateUDF",
-        "CsvReadOptions",
         "DataFrame",
         "Expr",
-        "RecordBatch",
         "RuntimeEnvBuilder",
-        "ScalarUDF",
         "SessionConfig",
         "SessionContext",
         "SessionExtensionComponents",
-        "Table",
-        "WindowUDF",
         "col",
         "column",
-        "configure_formatter",
         "functions",
         "ipc",
         "lit",
@@ -262,7 +255,10 @@ def test_root_all_matches_curated_surface():
         "unparser",
     ]
     assert datafusion.__all__ == expected
-    assert dir(datafusion) == sorted(expected)
+    for name in expected:
+        assert name in dir(datafusion)
+    for name in datafusion._DEPRECATED_ROOT_NAMES:
+        assert name not in dir(datafusion)
 
 
 @pytest.mark.parametrize(
@@ -279,6 +275,7 @@ def test_root_all_matches_curated_surface():
         ("MetricsSet", "datafusion.plan", "MetricsSet"),
         ("PhysicalPartitioning", "datafusion.plan", "PhysicalPartitioning"),
         ("Catalog", "datafusion.catalog", "Catalog"),
+        ("Table", "datafusion.catalog", "Table"),
         ("TableProviderFactory", "datafusion.catalog", "TableProviderFactory"),
         (
             "TableProviderFactoryExportable",
@@ -287,9 +284,21 @@ def test_root_all_matches_curated_surface():
         ),
         ("DFSchema", "datafusion.common", "DFSchema"),
         ("WindowFrame", "datafusion.expr", "WindowFrame"),
+        ("string_literal", "datafusion.expr", "string_literal"),
+        ("str_lit", "datafusion.expr", "str_lit"),
         ("SQLOptions", "datafusion.context", "SQLOptions"),
+        ("CsvReadOptions", "datafusion.options", "CsvReadOptions"),
+        ("RecordBatch", "datafusion.record_batch", "RecordBatch"),
         ("RecordBatchStream", "datafusion.record_batch", "RecordBatchStream"),
+        ("AggregateUDF", "datafusion.user_defined", "AggregateUDF"),
+        ("ScalarUDF", "datafusion.user_defined", "ScalarUDF"),
         ("TableFunction", "datafusion.user_defined", "TableFunction"),
+        ("WindowUDF", "datafusion.user_defined", "WindowUDF"),
+        (
+            "configure_formatter",
+            "datafusion.dataframe_formatter",
+            "configure_formatter",
+        ),
     ],
 )
 def test_deprecated_root_symbols_emit_warning(deprecated_name, submodule, target_name):
@@ -314,3 +323,12 @@ def test_unknown_root_attribute_raises():
     msg = "module 'datafusion' has no attribute 'nonexistent'"
     with pytest.raises(AttributeError, match=msg):
         _ = datafusion.nonexistent
+
+
+def test_string_literal_in_expr():
+    from datafusion.expr import str_lit, string_literal
+
+    e1 = string_literal("hello")
+    e2 = str_lit("hello")
+    assert str(e1) == 'Expr(Utf8("hello"))'
+    assert str(e2) == 'Expr(Utf8("hello"))'

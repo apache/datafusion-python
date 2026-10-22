@@ -224,13 +224,13 @@ for batch in reader:
     ...  # process each batch as it is produced
 ```
 
-DataFrames are also iterable, yielding {class}`datafusion.RecordBatch`
+DataFrames are also iterable, yielding {class}`~datafusion.record_batch.RecordBatch`
 objects lazily so you can loop over results directly without importing
 PyArrow:
 
 ```python
 for batch in df:
-    ...  # each batch is a ``datafusion.RecordBatch``
+    ...  # each batch is a ``datafusion.record_batch.RecordBatch``
 ```
 
 Each batch exposes `to_pyarrow()`, allowing conversion to a PyArrow

@@ -32,11 +32,12 @@ For how to write one — the getter, what it receives, and how to serialize what
 it exposes — see {ref}`extension_providers` in the Extension Guide.
 
 Once you have this library available, you can construct a
-{py:class}`~datafusion.Table` in Python and register it with the
+{py:class}`~datafusion.catalog.Table` in Python and register it with the
 `SessionContext`.
 
 ```python
-from datafusion import SessionContext, Table
+from datafusion import SessionContext
+from datafusion.catalog import Table
 
 ctx = SessionContext()
 provider = MyTableProvider()

@@ -64,7 +64,6 @@ from typing import Any
 
 # Public submodules
 from . import functions, ipc, object_store, substrait, unparser
-from .catalog import Table
 from .col import col, column
 from .context import (
     RuntimeEnvBuilder,
@@ -72,17 +71,11 @@ from .context import (
     SessionContext,
 )
 from .dataframe import DataFrame
-from .dataframe_formatter import configure_formatter
 from .expr import Expr
 from .extensions import SessionExtensionComponents
 from .io import read_avro, read_csv, read_json, read_parquet
-from .options import CsvReadOptions
-from .record_batch import RecordBatch
 from .user_defined import (
     Accumulator,
-    AggregateUDF,
-    ScalarUDF,
-    WindowUDF,
     udaf,
     udf,
     udtf,
@@ -93,21 +86,14 @@ __version__ = importlib_metadata.version(__name__)
 
 __all__ = [
     "Accumulator",
-    "AggregateUDF",
-    "CsvReadOptions",
     "DataFrame",
     "Expr",
-    "RecordBatch",
     "RuntimeEnvBuilder",
-    "ScalarUDF",
     "SessionConfig",
     "SessionContext",
     "SessionExtensionComponents",
-    "Table",
-    "WindowUDF",
     "col",
     "column",
-    "configure_formatter",
     "functions",
     "ipc",
     "lit",
@@ -142,6 +128,7 @@ _DEPRECATED_ROOT_NAMES: dict[str, tuple[str, str]] = {
     "PhysicalPartitioning": ("datafusion.plan", "PhysicalPartitioning"),
     # datafusion.catalog
     "Catalog": ("datafusion.catalog", "Catalog"),
+    "Table": ("datafusion.catalog", "Table"),
     "TableProviderFactory": ("datafusion.catalog", "TableProviderFactory"),
     "TableProviderFactoryExportable": (
         "datafusion.catalog",
@@ -151,34 +138,22 @@ _DEPRECATED_ROOT_NAMES: dict[str, tuple[str, str]] = {
     "DFSchema": ("datafusion.common", "DFSchema"),
     # datafusion.expr
     "WindowFrame": ("datafusion.expr", "WindowFrame"),
+    "string_literal": ("datafusion.expr", "string_literal"),
+    "str_lit": ("datafusion.expr", "str_lit"),
     # datafusion.context
     "SQLOptions": ("datafusion.context", "SQLOptions"),
+    # datafusion.options
+    "CsvReadOptions": ("datafusion.options", "CsvReadOptions"),
     # datafusion.record_batch
+    "RecordBatch": ("datafusion.record_batch", "RecordBatch"),
     "RecordBatchStream": ("datafusion.record_batch", "RecordBatchStream"),
     # datafusion.user_defined
+    "AggregateUDF": ("datafusion.user_defined", "AggregateUDF"),
+    "ScalarUDF": ("datafusion.user_defined", "ScalarUDF"),
     "TableFunction": ("datafusion.user_defined", "TableFunction"),
-}
-
-_SUBMODULES: set[str] = {
-    "catalog",
-    "col",
-    "common",
-    "context",
-    "dataframe",
-    "dataframe_formatter",
-    "expr",
-    "extensions",
-    "functions",
-    "input",
-    "io",
-    "ipc",
-    "object_store",
-    "options",
-    "plan",
-    "record_batch",
-    "substrait",
-    "unparser",
-    "user_defined",
+    "WindowUDF": ("datafusion.user_defined", "WindowUDF"),
+    # datafusion.dataframe_formatter
+    "configure_formatter": ("datafusion.dataframe_formatter", "configure_formatter"),
 }
 
 
@@ -193,32 +168,13 @@ def __getattr__(name: str) -> Any:
         )
         module = importlib.import_module(module_path)
         return getattr(module, target_name)
-    if name in _SUBMODULES:
-        return importlib.import_module(f".{name}", __name__)
     msg = f"module '{__name__}' has no attribute '{name}'"
     raise AttributeError(msg)
-
-
-def __dir__() -> list[str]:
-    return sorted(__all__)
 
 
 def literal(value: Any) -> Expr:
     """Create a literal expression."""
     return Expr.literal(value)
-
-
-def string_literal(value: str) -> Expr:
-    """Create a UTF8 literal expression.
-
-    It differs from `literal` which creates a UTF8view literal.
-    """
-    return Expr.string_literal(value)
-
-
-def str_lit(value: str) -> Expr:
-    """Alias for `string_literal`."""
-    return string_literal(value)
 
 
 def lit(value: Any) -> Expr:
