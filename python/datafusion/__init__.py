@@ -57,54 +57,25 @@ https://github.com/apache/datafusion-python/blob/main/skills/datafusion_python/S
 
 from __future__ import annotations
 
+import importlib
 import importlib.metadata as importlib_metadata
+import warnings
 from typing import Any
 
 # Public submodules
 from . import functions, ipc, object_store, substrait, unparser
-
-# The following imports are okay to remain as opaque to the user.
-from .catalog import (
-    Catalog,
-    Table,
-    TableProviderFactory,
-    TableProviderFactoryExportable,
-)
 from .col import col, column
-from .common import DFSchema
 from .context import (
     RuntimeEnvBuilder,
     SessionConfig,
     SessionContext,
-    SQLOptions,
 )
-from .dataframe import (
-    DataFrame,
-    DataFrameWriteOptions,
-    ExplainFormat,
-    InsertOp,
-    ParquetColumnOptions,
-    ParquetWriterOptions,
-)
-from .dataframe_formatter import configure_formatter
-from .expr import Expr, WindowFrame
+from .dataframe import DataFrame
+from .expr import Expr
 from .extensions import SessionExtensionComponents
 from .io import read_avro, read_csv, read_json, read_parquet
-from .options import CsvReadOptions
-from .plan import (
-    ExecutionPlan,
-    LogicalPlan,
-    Metric,
-    MetricsSet,
-    PhysicalPartitioning,
-)
-from .record_batch import RecordBatch, RecordBatchStream
 from .user_defined import (
     Accumulator,
-    AggregateUDF,
-    ScalarUDF,
-    TableFunction,
-    WindowUDF,
     udaf,
     udf,
     udtf,
@@ -115,49 +86,21 @@ __version__ = importlib_metadata.version(__name__)
 
 __all__ = [
     "Accumulator",
-    "AggregateUDF",
-    "Catalog",
-    "CsvReadOptions",
-    "DFSchema",
     "DataFrame",
-    "DataFrameWriteOptions",
-    "ExecutionPlan",
-    "ExplainFormat",
     "Expr",
-    "InsertOp",
-    "LogicalPlan",
-    "Metric",
-    "MetricsSet",
-    "ParquetColumnOptions",
-    "ParquetWriterOptions",
-    "PhysicalPartitioning",
-    "RecordBatch",
-    "RecordBatchStream",
     "RuntimeEnvBuilder",
-    "SQLOptions",
-    "ScalarUDF",
     "SessionConfig",
     "SessionContext",
     "SessionExtensionComponents",
-    "Table",
-    "TableFunction",
-    "TableProviderFactory",
-    "TableProviderFactoryExportable",
-    "WindowFrame",
-    "WindowUDF",
-    "catalog",
     "col",
     "column",
-    "common",
-    "configure_formatter",
-    "expr",
-    "extensions",
     "functions",
     "ipc",
     "lit",
+    "lit_with_metadata",
     "literal",
+    "literal_with_metadata",
     "object_store",
-    "options",
     "read_avro",
     "read_csv",
     "read_json",
@@ -170,23 +113,68 @@ __all__ = [
     "unparser",
 ]
 
+_DEPRECATED_ROOT_NAMES: dict[str, tuple[str, str]] = {
+    # datafusion.dataframe
+    "DataFrameWriteOptions": ("datafusion.dataframe", "DataFrameWriteOptions"),
+    "ExplainFormat": ("datafusion.dataframe", "ExplainFormat"),
+    "InsertOp": ("datafusion.dataframe", "InsertOp"),
+    "ParquetColumnOptions": ("datafusion.dataframe", "ParquetColumnOptions"),
+    "ParquetWriterOptions": ("datafusion.dataframe", "ParquetWriterOptions"),
+    # datafusion.plan
+    "ExecutionPlan": ("datafusion.plan", "ExecutionPlan"),
+    "LogicalPlan": ("datafusion.plan", "LogicalPlan"),
+    "Metric": ("datafusion.plan", "Metric"),
+    "MetricsSet": ("datafusion.plan", "MetricsSet"),
+    "PhysicalPartitioning": ("datafusion.plan", "PhysicalPartitioning"),
+    # datafusion.catalog
+    "Catalog": ("datafusion.catalog", "Catalog"),
+    "Table": ("datafusion.catalog", "Table"),
+    "TableProviderFactory": ("datafusion.catalog", "TableProviderFactory"),
+    "TableProviderFactoryExportable": (
+        "datafusion.catalog",
+        "TableProviderFactoryExportable",
+    ),
+    # datafusion.common
+    "DFSchema": ("datafusion.common", "DFSchema"),
+    # datafusion.expr
+    "WindowFrame": ("datafusion.expr", "WindowFrame"),
+    "string_literal": ("datafusion.expr", "string_literal"),
+    "str_lit": ("datafusion.expr", "str_lit"),
+    # datafusion.context
+    "SQLOptions": ("datafusion.context", "SQLOptions"),
+    # datafusion.options
+    "CsvReadOptions": ("datafusion.options", "CsvReadOptions"),
+    # datafusion.record_batch
+    "RecordBatch": ("datafusion.record_batch", "RecordBatch"),
+    "RecordBatchStream": ("datafusion.record_batch", "RecordBatchStream"),
+    # datafusion.user_defined
+    "AggregateUDF": ("datafusion.user_defined", "AggregateUDF"),
+    "ScalarUDF": ("datafusion.user_defined", "ScalarUDF"),
+    "TableFunction": ("datafusion.user_defined", "TableFunction"),
+    "WindowUDF": ("datafusion.user_defined", "WindowUDF"),
+    # datafusion.dataframe_formatter
+    "configure_formatter": ("datafusion.dataframe_formatter", "configure_formatter"),
+}
+
+
+def __getattr__(name: str) -> Any:
+    if name in _DEPRECATED_ROOT_NAMES:
+        module_path, target_name = _DEPRECATED_ROOT_NAMES[name]
+        warnings.warn(
+            f"`datafusion.{name}` is deprecated and will be removed in a future "
+            f"release. Import `{target_name}` from `{module_path}` instead.",
+            category=DeprecationWarning,
+            stacklevel=2,
+        )
+        module = importlib.import_module(module_path)
+        return getattr(module, target_name)
+    msg = f"module '{__name__}' has no attribute '{name}'"
+    raise AttributeError(msg)
+
 
 def literal(value: Any) -> Expr:
     """Create a literal expression."""
     return Expr.literal(value)
-
-
-def string_literal(value: str) -> Expr:
-    """Create a UTF8 literal expression.
-
-    It differs from `literal` which creates a UTF8view literal.
-    """
-    return Expr.string_literal(value)
-
-
-def str_lit(value: str) -> Expr:
-    """Alias for `string_literal`."""
-    return string_literal(value)
 
 
 def lit(value: Any) -> Expr:

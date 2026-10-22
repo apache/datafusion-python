@@ -21,17 +21,19 @@ import pyarrow as pa
 import pyarrow.parquet as pq
 import pytest
 from datafusion import (
-    ExecutionPlan,
-    LogicalPlan,
-    Metric,
-    MetricsSet,
-    PhysicalPartitioning,
     SessionConfig,
     SessionContext,
     col,
     udf,
 )
 from datafusion.expr import Partitioning
+from datafusion.plan import (
+    ExecutionPlan,
+    LogicalPlan,
+    Metric,
+    MetricsSet,
+    PhysicalPartitioning,
+)
 
 
 # Note: CSV because a *logical* plan cannot carry a memory table. The physical

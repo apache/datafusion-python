@@ -15,10 +15,17 @@
 # specific language governing permissions and limitations
 # under the License.
 
+import importlib
+
 import datafusion
+import datafusion.catalog
+import datafusion.common
+import datafusion.expr
 import datafusion.functions
 import datafusion.object_store
+import datafusion.options
 import datafusion.substrait
+import datafusion.unparser
 import pytest
 
 # EnumType introduced in 3.11. 3.10 and prior it was called EnumMeta.
@@ -59,13 +66,38 @@ def _check_list_attribute(internal_attr, wrapped_attr) -> None:
     for val in internal_attr:
         if isinstance(val, str) and val.startswith("Raw"):
             assert val[3:] in wrapped_attr
+        elif isinstance(val, str) and val in datafusion._DEPRECATED_ROOT_NAMES:
+            submodule_path, target_name = datafusion._DEPRECATED_ROOT_NAMES[val]
+            submod = importlib.import_module(submodule_path)
+            submod_all = getattr(submod, "__all__", None)
+            if submod_all is not None:
+                assert target_name in submod_all
+            else:
+                assert hasattr(submod, target_name)
+        elif isinstance(val, str) and hasattr(datafusion, val):
+            continue
         else:
             assert val in wrapped_attr
 
 
+def _check_moved_root_export(
+    internal_obj, internal_attr_name: str, wrapped_attr_name: str
+) -> bool:
+    """Check if root export was moved to a submodule."""
+    if wrapped_attr_name not in datafusion._DEPRECATED_ROOT_NAMES:
+        return False
+    submodule_path, target_name = datafusion._DEPRECATED_ROOT_NAMES[wrapped_attr_name]
+    submod = importlib.import_module(submodule_path)
+    assert target_name in dir(submod)
+    wrapped_attr = getattr(submod, target_name)
+    internal_attr = getattr(internal_obj, internal_attr_name)
+    if internal_attr is not None and wrapped_attr is None:
+        pytest.fail(f"Missing attribute: {internal_attr_name}")
+    return True
+
+
 def missing_exports(internal_obj, wrapped_obj) -> None:
-    """
-    Identify if any of the rust exposted structs or functions do not have wrappers.
+    """Identify if any of the rust exposed structs or functions do not have wrappers.
 
     Special handling for:
     - Raw* classes: Internal implementation details that shouldn't be exposed
@@ -91,6 +123,11 @@ def missing_exports(internal_obj, wrapped_obj) -> None:
             continue
 
         wrapped_attr_name = internal_attr_name.removeprefix("Raw")
+
+        if wrapped_obj is datafusion and _check_moved_root_export(
+            internal_obj, internal_attr_name, wrapped_attr_name
+        ):
+            continue
 
         assert wrapped_attr_name in dir(wrapped_obj)
 

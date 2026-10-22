@@ -182,7 +182,7 @@ to match the other — see pitfall #7.
 ### Window Functions
 
 ```python
-from datafusion import WindowFrame
+from datafusion.expr import Window, WindowFrame
 
 # Row number partitioned by group, ordered by value
 df.window(
@@ -193,8 +193,6 @@ df.window(
 )
 
 # Using a Window object for reuse
-from datafusion.expr import Window
-
 win = Window(
     partition_by=[col("group")],
     order_by=[col("value").sort(ascending=True)],
@@ -295,7 +293,7 @@ when you may break out of the loop early. `execute_stream()` pulls one
 whole result up front.
 
 ```python
-# Single-partition stream; batch is a datafusion.RecordBatch
+# Single-partition stream; batch is a datafusion.record_batch.RecordBatch
 stream = df.execute_stream()
 for batch in stream:
     process(batch.to_pyarrow())         # convert to pa.RecordBatch if needed

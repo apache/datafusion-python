@@ -18,7 +18,8 @@
 import pyarrow as pa
 import pyarrow.dataset as ds
 import pytest
-from datafusion import Expr, SessionContext, Table, udtf
+from datafusion import Expr, SessionContext, udtf
+from datafusion.catalog import Table
 from datafusion.context import TableProviderExportable
 from datafusion.user_defined import TableFunction
 

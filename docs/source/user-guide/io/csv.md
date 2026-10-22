@@ -41,7 +41,7 @@ If you require additional control over how to read the CSV file, you can use
 {py:class}`~datafusion.options.CsvReadOptions` to set a variety of options.
 
 ```python
-from datafusion import CsvReadOptions
+from datafusion.options import CsvReadOptions
 options = (
     CsvReadOptions()
     .with_has_header(True) # File contains a header row

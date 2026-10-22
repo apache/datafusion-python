@@ -88,6 +88,24 @@ Mostly, the `python` code is limited to pure wrappers with type hints and good d
 2. Simple type conversion, like from a `path` to a `string` of the path or from `number` to `lit(number)`.
 3. The additional code makes an API **much** more pythonic, like we do for {py:func}`~datafusion.functions.named_struct` (see [source code](https://github.com/apache/datafusion-python/blob/a0913c728f5f323c1eb4913e614c9d996083e274/python/datafusion/functions.py#L1040-L1046)).
 
+## Package Root Exports
+
+The package root (`datafusion`) holds what a typical program constructs or calls
+on the common path:
+- Core session and environment builders (`SessionContext`, `SessionConfig`,
+  `RuntimeEnvBuilder`, `SessionExtensionComponents`)
+- Core query expressions and builders (`DataFrame`, `Expr`, `col` / `column`,
+  `lit` / `literal`, `lit_with_metadata` / `literal_with_metadata`)
+- Functions and decorators (`udf`, `udaf`, `udwf`, `udtf`, `Accumulator`)
+- File format readers (`read_avro`, `read_csv`, `read_json`, `read_parquet`)
+- Public submodules (`functions`, `ipc`, `object_store`, `substrait`, `unparser`)
+
+Types that are only named (an enum, a protocol, an options or result type, an
+intermediate plan node, or advanced catalog/FFI objects) are not exported at the
+package root. They must be imported from their respective submodules (such as
+`datafusion.dataframe`, `datafusion.plan`, `datafusion.catalog`,
+`datafusion.options`, `datafusion.expr`, `datafusion.user_defined`).
+
 ## Update Dependencies
 
 To change test dependencies, change the `pyproject.toml` and run

@@ -59,7 +59,6 @@ from urllib.parse import urlparse
 
 import pyarrow as pa
 
-from datafusion import extensions as _extensions
 from datafusion.catalog import (
     Catalog,
     CatalogList,
@@ -78,6 +77,7 @@ from datafusion.options import (
 )
 from datafusion.record_batch import RecordBatchStream
 
+from . import extensions as _extensions
 from ._internal import RuntimeEnvBuilder as RuntimeEnvBuilderInternal
 from ._internal import SessionConfig as SessionConfigInternal
 from ._internal import SessionContext as SessionContextInternal
@@ -554,7 +554,8 @@ class SQLOptions:
             A new :py:class:`SQLOptions` object with the updated setting.
 
         Examples:
-            >>> options = dfn.SQLOptions().with_allow_ddl(True)
+            >>> from datafusion.context import SQLOptions
+            >>> options = SQLOptions().with_allow_ddl(True)
         """
         self.options_internal = self.options_internal.with_allow_ddl(allow)
         return self
@@ -571,7 +572,8 @@ class SQLOptions:
             A new :py:class:`SQLOptions` object with the updated setting.
 
         Examples:
-            >>> options = dfn.SQLOptions().with_allow_dml(True)
+            >>> from datafusion.context import SQLOptions
+            >>> options = SQLOptions().with_allow_dml(True)
         """
         self.options_internal = self.options_internal.with_allow_dml(allow)
         return self
@@ -583,10 +585,11 @@ class SQLOptions:
             allow: Allow statements to be run.
 
         Returns:
-            A new :py:class:SQLOptions` object with the updated setting.
+            A new :py:class:`SQLOptions` object with the updated setting.
 
         Examples:
-            >>> options = dfn.SQLOptions().with_allow_statements(True)
+            >>> from datafusion.context import SQLOptions
+            >>> options = SQLOptions().with_allow_statements(True)
         """
         self.options_internal = self.options_internal.with_allow_statements(allow)
         return self
@@ -984,7 +987,7 @@ class SessionContext:
         name: str,
         table: Table | TableProviderExportable | DataFrame | pa.dataset.Dataset,
     ) -> None:
-        """Register a :py:class:`~datafusion.Table` with this context.
+        """Register a :py:class:`~datafusion.catalog.Table` with this context.
 
         The registered table can be referenced from SQL statements executed against
         this context.

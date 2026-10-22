@@ -17,7 +17,8 @@
 
 """Example demonstrating CsvReadOptions usage."""
 
-from datafusion import CsvReadOptions, SessionContext
+from datafusion import SessionContext
+from datafusion.options import CsvReadOptions
 
 # Create a SessionContext
 ctx = SessionContext()

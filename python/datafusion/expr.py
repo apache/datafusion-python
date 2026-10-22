@@ -244,7 +244,6 @@ __all__ = [
     "Like",
     "Limit",
     "Literal",
-    "Literal",
     "Negative",
     "Not",
     "OperateFunctionArg",
@@ -283,6 +282,8 @@ __all__ = [
     "coerce_to_expr_or_none",
     "ensure_expr",
     "ensure_expr_list",
+    "str_lit",
+    "string_literal",
 ]
 
 
@@ -1908,3 +1909,28 @@ class GroupingSet:
         """
         raw_lists = [[_to_raw_expr(e) for e in lst] for lst in expr_lists]
         return Expr(expr_internal.GroupingSet.grouping_sets(*raw_lists))
+
+
+def string_literal(value: str) -> Expr:
+    """Create a UTF-8 literal expression.
+
+    It differs from :func:`~datafusion.literal` which creates a UTF8View literal.
+
+    Args:
+        value: The string literal value.
+
+    Examples:
+        >>> from datafusion.expr import string_literal
+        >>> string_literal("hello")
+        Expr(Utf8("hello"))
+    """
+    return Expr.string_literal(value)
+
+
+def str_lit(value: str) -> Expr:
+    """Alias for :func:`string_literal`.
+
+    See Also:
+        :func:`string_literal`
+    """
+    return string_literal(value)

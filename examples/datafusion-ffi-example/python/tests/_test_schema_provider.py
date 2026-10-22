@@ -20,8 +20,8 @@ from __future__ import annotations
 import pyarrow as pa
 import pyarrow.dataset as ds
 import pytest
-from datafusion import SessionContext, Table
-from datafusion.catalog import Schema
+from datafusion import SessionContext
+from datafusion.catalog import Schema, Table
 from datafusion_ffi_example import FixedSchemaProvider, MyCatalogProvider
 
 
