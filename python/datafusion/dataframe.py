@@ -1264,7 +1264,7 @@ class DataFrame:
         Examples:
             Show the plan in tree format:
 
-            >>> from datafusion import ExplainFormat
+            >>> from datafusion.dataframe import ExplainFormat
             >>> ctx = dfn.SessionContext()
             >>> df = ctx.from_pydict({"a": [1, 2, 3]})
             >>> df.explain(format=ExplainFormat.TREE)  # doctest: +SKIP

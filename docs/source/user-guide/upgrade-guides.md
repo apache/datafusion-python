@@ -21,6 +21,38 @@
 
 ## DataFusion 56.0.0
 
+### Package root limited to common entry points
+
+To keep the top-level `datafusion` namespace predictable and focused on common
+workflows, types that are only named (enums, options classes, plan types, and
+advanced catalog protocols) are now imported from their respective submodules
+rather than the package root.
+
+Old imports continue to work throughout DataFusion 56.0.0 via a module-level
+`__getattr__` deprecation shim that raises a `DeprecationWarning`, and will be
+removed in a future release.
+
+| Deprecated root import | Canonical import location |
+|---|---|
+| `from datafusion import DataFrameWriteOptions` | `from datafusion.dataframe import DataFrameWriteOptions` |
+| `from datafusion import ExplainFormat` | `from datafusion.dataframe import ExplainFormat` |
+| `from datafusion import InsertOp` | `from datafusion.dataframe import InsertOp` |
+| `from datafusion import ParquetColumnOptions` | `from datafusion.dataframe import ParquetColumnOptions` |
+| `from datafusion import ParquetWriterOptions` | `from datafusion.dataframe import ParquetWriterOptions` |
+| `from datafusion import ExecutionPlan` | `from datafusion.plan import ExecutionPlan` |
+| `from datafusion import LogicalPlan` | `from datafusion.plan import LogicalPlan` |
+| `from datafusion import Metric` | `from datafusion.plan import Metric` |
+| `from datafusion import MetricsSet` | `from datafusion.plan import MetricsSet` |
+| `from datafusion import PhysicalPartitioning` | `from datafusion.plan import PhysicalPartitioning` |
+| `from datafusion import Catalog` | `from datafusion.catalog import Catalog` |
+| `from datafusion import TableProviderFactory` | `from datafusion.catalog import TableProviderFactory` |
+| `from datafusion import TableProviderFactoryExportable` | `from datafusion.catalog import TableProviderFactoryExportable` |
+| `from datafusion import DFSchema` | `from datafusion.common import DFSchema` |
+| `from datafusion import WindowFrame` | `from datafusion.expr import WindowFrame` |
+| `from datafusion import SQLOptions` | `from datafusion.context import SQLOptions` |
+| `from datafusion import RecordBatchStream` | `from datafusion.record_batch import RecordBatchStream` |
+| `from datafusion import TableFunction` | `from datafusion.user_defined import TableFunction` |
+
 ### `sort` and `order_by` now order `NULLS LAST` by default
 
 Calling `.sort(...)` on a DataFrame or using the `.order_by(...)` function now

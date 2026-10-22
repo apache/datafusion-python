@@ -19,7 +19,8 @@ from __future__ import annotations
 
 import pyarrow as pa
 import pytest
-from datafusion import Expr, LogicalPlan, SessionContext, col, udf
+from datafusion import Expr, SessionContext, col, udf
+from datafusion.plan import LogicalPlan
 from datafusion_ffi_example import (
     MyLogicalExtensionCodec,
     MyTableProvider,

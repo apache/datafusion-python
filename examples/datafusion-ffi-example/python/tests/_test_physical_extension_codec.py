@@ -18,7 +18,8 @@
 from __future__ import annotations
 
 import pyarrow as pa
-from datafusion import ExecutionPlan, SessionContext
+from datafusion import SessionContext
+from datafusion.plan import ExecutionPlan
 from datafusion_ffi_example import MyPhysicalExtensionCodec
 
 

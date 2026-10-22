@@ -31,12 +31,12 @@ from datafusion import (
     SessionConfig,
     SessionContext,
     SessionExtensionComponents,
-    SQLOptions,
     Table,
     column,
     literal,
     udf,
 )
+from datafusion.context import SQLOptions
 
 
 def test_create_context_no_args():

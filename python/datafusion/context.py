@@ -59,7 +59,6 @@ from urllib.parse import urlparse
 
 import pyarrow as pa
 
-from datafusion import extensions as _extensions
 from datafusion.catalog import (
     Catalog,
     CatalogList,
@@ -78,6 +77,7 @@ from datafusion.options import (
 )
 from datafusion.record_batch import RecordBatchStream
 
+from . import extensions as _extensions
 from ._internal import RuntimeEnvBuilder as RuntimeEnvBuilderInternal
 from ._internal import SessionConfig as SessionConfigInternal
 from ._internal import SessionContext as SessionContextInternal

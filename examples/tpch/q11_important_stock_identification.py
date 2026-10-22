@@ -57,9 +57,9 @@ Reference SQL (from TPC-H specification, used by the benchmark suite)::
         value desc;
 """
 
-from datafusion import SessionContext, WindowFrame, col, lit
+from datafusion import SessionContext, col, lit
 from datafusion import functions as F
-from datafusion.expr import Window
+from datafusion.expr import Window, WindowFrame
 from util import get_data_path
 
 NATION = "GERMANY"

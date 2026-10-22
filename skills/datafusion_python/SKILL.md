@@ -182,7 +182,7 @@ to match the other — see pitfall #7.
 ### Window Functions
 
 ```python
-from datafusion import WindowFrame
+from datafusion.expr import Window, WindowFrame
 
 # Row number partitioned by group, ordered by value
 df.window(
@@ -193,8 +193,6 @@ df.window(
 )
 
 # Using a Window object for reuse
-from datafusion.expr import Window
-
 win = Window(
     partition_by=[col("group")],
     order_by=[col("value").sort(ascending=True)],

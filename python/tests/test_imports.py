@@ -15,16 +15,18 @@
 # specific language governing permissions and limitations
 # under the License.
 
+import importlib
+
 import datafusion
 import pytest
 from datafusion import (
-    AggregateUDF,
     DataFrame,
-    ScalarUDF,
     SessionContext,
+    functions,
+)
+from datafusion.catalog import (
     TableProviderFactory,
     TableProviderFactoryExportable,
-    functions,
 )
 from datafusion.common import (
     DFSchema,
@@ -83,6 +85,10 @@ from datafusion.expr import (
     TableScan,
     TryCast,
     Union,
+)
+from datafusion.user_defined import (
+    AggregateUDF,
+    ScalarUDF,
 )
 
 
@@ -171,7 +177,7 @@ def test_class_module_is_datafusion():
     ]:
         assert klass.__module__ == "datafusion.expr"
 
-    # catalog factory types (re-exported at top level)
+    # catalog factory types
     for klass in [TableProviderFactory, TableProviderFactoryExportable]:
         assert klass.__module__ == "datafusion.catalog"
 
@@ -216,3 +222,95 @@ def test_classes_are_inheritable():
 
     class MyDataFrame(DataFrame):
         pass
+
+
+def test_root_all_matches_curated_surface():
+    """Verify package root __all__ contains only common entry points."""
+    expected = [
+        "Accumulator",
+        "AggregateUDF",
+        "CsvReadOptions",
+        "DataFrame",
+        "Expr",
+        "RecordBatch",
+        "RuntimeEnvBuilder",
+        "ScalarUDF",
+        "SessionConfig",
+        "SessionContext",
+        "SessionExtensionComponents",
+        "Table",
+        "WindowUDF",
+        "col",
+        "column",
+        "configure_formatter",
+        "functions",
+        "ipc",
+        "lit",
+        "lit_with_metadata",
+        "literal",
+        "literal_with_metadata",
+        "object_store",
+        "read_avro",
+        "read_csv",
+        "read_json",
+        "read_parquet",
+        "substrait",
+        "udaf",
+        "udf",
+        "udtf",
+        "udwf",
+        "unparser",
+    ]
+    assert datafusion.__all__ == expected
+    assert dir(datafusion) == sorted(expected)
+
+
+@pytest.mark.parametrize(
+    ("deprecated_name", "submodule", "target_name"),
+    [
+        ("DataFrameWriteOptions", "datafusion.dataframe", "DataFrameWriteOptions"),
+        ("ExplainFormat", "datafusion.dataframe", "ExplainFormat"),
+        ("InsertOp", "datafusion.dataframe", "InsertOp"),
+        ("ParquetColumnOptions", "datafusion.dataframe", "ParquetColumnOptions"),
+        ("ParquetWriterOptions", "datafusion.dataframe", "ParquetWriterOptions"),
+        ("ExecutionPlan", "datafusion.plan", "ExecutionPlan"),
+        ("LogicalPlan", "datafusion.plan", "LogicalPlan"),
+        ("Metric", "datafusion.plan", "Metric"),
+        ("MetricsSet", "datafusion.plan", "MetricsSet"),
+        ("PhysicalPartitioning", "datafusion.plan", "PhysicalPartitioning"),
+        ("Catalog", "datafusion.catalog", "Catalog"),
+        ("TableProviderFactory", "datafusion.catalog", "TableProviderFactory"),
+        (
+            "TableProviderFactoryExportable",
+            "datafusion.catalog",
+            "TableProviderFactoryExportable",
+        ),
+        ("DFSchema", "datafusion.common", "DFSchema"),
+        ("WindowFrame", "datafusion.expr", "WindowFrame"),
+        ("SQLOptions", "datafusion.context", "SQLOptions"),
+        ("RecordBatchStream", "datafusion.record_batch", "RecordBatchStream"),
+        ("TableFunction", "datafusion.user_defined", "TableFunction"),
+    ],
+)
+def test_deprecated_root_symbols_emit_warning(deprecated_name, submodule, target_name):
+    """Deprecated root names emit warning and resolve to target object."""
+    assert deprecated_name not in datafusion.__all__
+
+    expected_mod = importlib.import_module(submodule)
+    expected_obj = getattr(expected_mod, target_name)
+
+    expected_msg = (
+        f"`datafusion.{deprecated_name}` is deprecated and will be removed in a future "
+        f"release. Import `{target_name}` from `{submodule}` instead."
+    )
+
+    with pytest.deprecated_call(match=expected_msg):
+        actual_obj = getattr(datafusion, deprecated_name)
+
+    assert actual_obj is expected_obj
+
+
+def test_unknown_root_attribute_raises():
+    msg = "module 'datafusion' has no attribute 'nonexistent'"
+    with pytest.raises(AttributeError, match=msg):
+        _ = datafusion.nonexistent

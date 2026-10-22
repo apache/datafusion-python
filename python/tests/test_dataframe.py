@@ -30,13 +30,8 @@ import pyarrow.parquet as pq
 import pytest
 from datafusion import (
     DataFrame,
-    ExplainFormat,
-    InsertOp,
-    ParquetColumnOptions,
-    ParquetWriterOptions,
     RecordBatch,
     SessionContext,
-    WindowFrame,
     column,
     literal,
     udf,
@@ -51,7 +46,11 @@ from datafusion.common import NullTreatment
 from datafusion.dataframe import (
     DataFrameWriteOptions,
     ExplainAnalyzeLevel,
+    ExplainFormat,
     ExplainMetricCategory,
+    InsertOp,
+    ParquetColumnOptions,
+    ParquetWriterOptions,
 )
 from datafusion.dataframe_formatter import (
     DataFrameHtmlFormatter,
@@ -59,7 +58,7 @@ from datafusion.dataframe_formatter import (
     get_formatter,
     reset_formatter,
 )
-from datafusion.expr import EXPR_TYPE_ERROR, Window
+from datafusion.expr import EXPR_TYPE_ERROR, Window, WindowFrame
 from pyarrow.csv import write_csv
 
 pa_cffi = pytest.importorskip("pyarrow.cffi")

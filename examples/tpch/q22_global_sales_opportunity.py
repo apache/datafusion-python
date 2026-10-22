@@ -66,9 +66,9 @@ Reference SQL (from TPC-H specification, used by the benchmark suite)::
         cntrycode;
 """
 
-from datafusion import SessionContext, WindowFrame, col, lit
+from datafusion import SessionContext, col, lit
 from datafusion import functions as F
-from datafusion.expr import Window
+from datafusion.expr import Window, WindowFrame
 from util import get_data_path
 
 NATION_CODES = [13, 31, 23, 29, 30, 18, 17]

@@ -22,7 +22,8 @@ import datafusion as dfn
 import pyarrow as pa
 import pyarrow.dataset as ds
 import pytest
-from datafusion import Catalog, SessionContext, Table, udtf
+from datafusion import SessionContext, Table, udtf
+from datafusion.catalog import Catalog
 
 if TYPE_CHECKING:
     from datafusion.catalog import CatalogProvider, CatalogProviderExportable

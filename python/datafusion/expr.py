@@ -244,7 +244,6 @@ __all__ = [
     "Like",
     "Limit",
     "Literal",
-    "Literal",
     "Negative",
     "Not",
     "OperateFunctionArg",
