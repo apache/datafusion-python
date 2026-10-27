@@ -51,3 +51,19 @@ def test_table_provider_ffi(inner_capsule: bool) -> None:
     result = ctx.read_table(table).collect()
     result = sorted((r.column(0) for r in result), key=lambda a: a[0].as_py())
     assert result == expected
+
+
+def test_table_provider_survives_enable_url_table():
+    ctx = SessionContext()
+    ctx.register_table("t", MyTableProvider(3, 2, 4))
+    session_id = ctx.session_id()
+
+    # Reassigning the derived handle must not orphan FFI providers tied to the
+    # session, and enabling URL tables repeatedly must remain safe.
+    ctx = ctx.enable_url_table()
+    ctx = ctx.enable_url_table()
+
+    assert ctx.session_id() == session_id
+    result = ctx.table("t").collect()
+    assert len(result) == 4
+    assert result[0].num_columns == 3

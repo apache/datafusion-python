@@ -669,7 +669,7 @@ class SessionContext:
         """Control if local files can be queried as tables.
 
         Returns:
-            A new :py:class:`SessionContext` object with url table enabled.
+            A handle on the same session with url table enabled.
         """
         klass = self.__class__
         obj = klass.__new__(klass)
