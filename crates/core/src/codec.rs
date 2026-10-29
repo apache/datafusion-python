@@ -143,18 +143,30 @@ use crate::udwf::PythonFunctionWindowUDF;
 /// Family prefix for an inlined Python scalar UDF
 /// (cloudpickled tuple of name, callable, input schema, return field,
 /// volatility).
-pub(crate) const PY_SCALAR_UDF_FAMILY: &[u8] = b"DFPYUDF";
+///
+/// Public wire-format family registry entry for downstream consumers
+/// (e.g. Ballista's Python client) that need to recognise inline
+/// Python UDF payloads without duplicating these magic bytes.
+pub const PY_SCALAR_UDF_FAMILY: &[u8] = b"DFPYUDF";
 
 /// Family prefix for an inlined Python aggregate UDF
 /// (cloudpickled tuple of name, accumulator factory, input schema bytes,
 /// return schema bytes (single-field IPC schema), state schema bytes,
 /// volatility).
-pub(crate) const PY_AGG_UDF_FAMILY: &[u8] = b"DFPYUDA";
+///
+/// Public wire-format family registry entry for downstream consumers
+/// (e.g. Ballista's Python client) that need to recognise inline
+/// Python UDF payloads without duplicating these magic bytes.
+pub const PY_AGG_UDF_FAMILY: &[u8] = b"DFPYUDA";
 
 /// Family prefix for an inlined Python window UDF
 /// (cloudpickled tuple of name, evaluator factory, input schema bytes,
 /// return schema bytes (single-field IPC schema), volatility).
-pub(crate) const PY_WINDOW_UDF_FAMILY: &[u8] = b"DFPYUDW";
+///
+/// Public wire-format family registry entry for downstream consumers
+/// (e.g. Ballista's Python client) that need to recognise inline
+/// Python UDF payloads without duplicating these magic bytes.
+pub const PY_WINDOW_UDF_FAMILY: &[u8] = b"DFPYUDW";
 
 /// Wire-format version this build emits.
 pub(crate) const WIRE_VERSION_CURRENT: u8 = 1;
