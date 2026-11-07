@@ -174,7 +174,11 @@ impl TableProvider for TempViewTable {
 
         let mut plan = if let Some(projection) = projection {
             // avoiding adding a redundant projection (e.g. SELECT * FROM view)
-            if projection.iter().copied().eq(0..plan.schema().fields().len()) {
+            if projection
+                .iter()
+                .copied()
+                .eq(0..plan.schema().fields().len())
+            {
                 plan
             } else {
                 let fields: Vec<Expr> = projection

@@ -67,7 +67,7 @@ object_store = { version = "0.14" }
 url = "2"
 log = "0.4.29"
 parking_lot = "0.12"
-prost-types = "0.14.3"                                                # keep in line with `datafusion-substrait`
+prost-types = "0.14.3"                                                    # keep in line with `datafusion-substrait`
 pyo3-build-config = "0.29"
 datafusion-python-util = { path = "crates/util", version = "55.0.0" }
 
@@ -78,14 +78,14 @@ codegen-units = 2
 # We cannot publish to crates.io with any patches in the below section. Developers
 # must remove any entries in this section before creating a release candidate.
 [patch.crates-io]
-datafusion = { git = "https://github.com/apache/datafusion", branch = "branch-56"}
-datafusion-substrait = { git = "https://github.com/apache/datafusion", branch = "branch-56"}
-datafusion-proto = { git = "https://github.com/apache/datafusion", branch = "branch-56"}
-datafusion-ffi = { git = "https://github.com/apache/datafusion", branch = "branch-56"}
+datafusion = { git = "https://github.com/apache/datafusion", branch = "branch-56" }
+datafusion-substrait = { git = "https://github.com/apache/datafusion", branch = "branch-56" }
+datafusion-proto = { git = "https://github.com/apache/datafusion", branch = "branch-56" }
+datafusion-ffi = { git = "https://github.com/apache/datafusion", branch = "branch-56" }
 datafusion-catalog = { git = "https://github.com/apache/datafusion", branch = "branch-56" }
 datafusion-common = { git = "https://github.com/apache/datafusion", branch = "branch-56" }
-datafusion-functions-aggregate = { git = "https://github.com/apache/datafusion", branch = "branch-56"}
-datafusion-functions-window = { git = "https://github.com/apache/datafusion", branch = "branch-56"}
-datafusion-spark = { git = "https://github.com/apache/datafusion", branch = "branch-56"}
-datafusion-expr = { git = "https://github.com/apache/datafusion", branch = "branch-56"}
-datafusion-session = { git = "https://github.com/apache/datafusion", branch = "branch-56"}
+datafusion-functions-aggregate = { git = "https://github.com/apache/datafusion", branch = "branch-56" }
+datafusion-functions-window = { git = "https://github.com/apache/datafusion", branch = "branch-56" }
+datafusion-spark = { git = "https://github.com/apache/datafusion", branch = "branch-56" }
+datafusion-expr = { git = "https://github.com/apache/datafusion", branch = "branch-56" }
+datafusion-session = { git = "https://github.com/apache/datafusion", branch = "branch-56" }
