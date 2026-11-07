@@ -44,7 +44,6 @@ from datafusion.expr import (
     Column,
     CopyTo,
     CreateIndex,
-    DescribeTable,
     DmlStatement,
     DropCatalogSchema,
     Filter,
@@ -52,6 +51,7 @@ from datafusion.expr import (
     Literal,
     Projection,
     RecursiveQuery,
+    Show,
     Sort,
     TableScan,
     TransactionEnd,
@@ -383,12 +383,25 @@ def test_create_index():
     assert isinstance(plan, CreateIndex)
 
 
-def test_describe_table():
+@pytest.mark.parametrize(
+    ("sql", "kind"),
+    [
+        ("describe foo", "columns"),
+        ("describe select a from foo", "describe"),
+        ("show tables", "tables"),
+        ("show columns from foo", "columns"),
+        ("show create table foo", "create_table"),
+        ("show datafusion.execution.batch_size", "variables"),
+        ("show functions", "functions"),
+    ],
+)
+def test_describe_table(sql, kind):
     ctx = SessionContext()
     ctx.sql("CREATE TABLE foo (a int, b int)").collect()
-    plan = ctx.sql("describe foo").logical_plan()
+    plan = ctx.sql(sql).logical_plan()
     plan = plan.to_variant()
-    assert isinstance(plan, DescribeTable)
+    assert isinstance(plan, Show)
+    assert plan.kind() == kind
 
 
 def test_dml_statement():
@@ -420,6 +433,65 @@ def test_recursive_query():
     ).logical_plan()
     plan = plan.inputs()[0].inputs()[0].to_variant()
     assert isinstance(plan, RecursiveQuery)
+
+
+def test_materialized_cte():
+    ctx = SessionContext()
+    ctx.sql("SET datafusion.sql_parser.dialect = 'PostgreSQL'")
+    df = ctx.sql(
+        """
+        WITH t (a) AS MATERIALIZED (
+            SELECT 1
+        )
+        SELECT * FROM t
+        UNION ALL
+        SELECT * FROM t
+        """
+    )
+
+    assert df.optimized_logical_plan().display_indent() == (
+        "MaterializedCte: name=t\n"
+        "  SubqueryAlias: t\n"
+        "    Projection: Int64(1) AS a\n"
+        "      EmptyRelation: rows=1\n"
+        "  Union\n"
+        "    MaterializedCteScan: name=t\n"
+        "    MaterializedCteScan: name=t"
+    )
+
+    result = pa.Table.from_batches(df.collect())
+    assert result.column("a").to_pylist() == [1, 1]
+
+
+def test_asof_join():
+    ctx = SessionContext()
+    df = ctx.sql(
+        """
+        WITH t1(k, ts, a) AS (VALUES (1, 1, 10), (1, 4, 20), (2, 2, 30)),
+             t2(k, ts, b) AS (VALUES (1, 2, 100), (1, 4, 200), (2, 1, 300))
+        SELECT t1.a, t2.b
+        FROM t1
+        ASOF JOIN t2
+            MATCH_CONDITION (t1.ts <= t2.ts)
+            ON t1.k = t2.k
+        """
+    )
+
+    assert df.optimized_logical_plan().display_indent() == (
+        "Projection: t1.a, t2.b\n"
+        "  AsOf Join: match=[t1.ts <= t2.ts], constraint=On, on=[t1.k = t2.k]\n"
+        "    SubqueryAlias: t1\n"
+        "      Projection: column1 AS k, column2 AS ts, column3 AS a\n"
+        "        Values: (Int64(1), Int64(1), Int64(10)), "
+        "(Int64(1), Int64(4), Int64(20)), (Int64(2), Int64(2), Int64(30))\n"
+        "    SubqueryAlias: t2\n"
+        "      Projection: column1 AS k, column2 AS ts, column3 AS b\n"
+        "        Values: (Int64(1), Int64(2), Int64(100)), "
+        "(Int64(1), Int64(4), Int64(200)), (Int64(2), Int64(1), Int64(300))"
+    )
+
+    result = pa.Table.from_batches(df.collect()).sort_by("a")
+    assert result.to_pydict() == {"a": [10, 20, 30], "b": [100, 200, None]}
 
 
 def test_values():

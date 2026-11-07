@@ -2719,7 +2719,9 @@ def test_write_parquet_with_options_compression(df, tmp_path, compression):
 def test_write_parquet_with_options_wrong_compression_level(df, tmp_path, compression):
     path = tmp_path
 
-    with pytest.raises(Exception, match=r"valid compression range .*? exceeded."):
+    with pytest.raises(
+        Exception, match=r"Invalid compression level \d+ for \w+\. Expected a level"
+    ):
         df.write_parquet_with_options(
             str(path), ParquetWriterOptions(compression=compression)
         )

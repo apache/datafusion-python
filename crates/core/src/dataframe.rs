@@ -33,6 +33,9 @@ use datafusion::arrow::pyarrow::{PyArrowType, ToPyArrow};
 use datafusion::arrow::util::pretty;
 use datafusion::catalog::TableProvider;
 use datafusion::common::UnnestOptions;
+use datafusion::common::parquet_config::{
+    DFParquetCompression, DFParquetEncoding, DFParquetStatistics, DFParquetWriterVersion,
+};
 use datafusion::config::{CsvOptions, ParquetColumnOptions, ParquetOptions, TableParquetOptions};
 use datafusion::dataframe::{DataFrame, DataFrameWriteOptions};
 use datafusion::error::DataFusionError;
@@ -229,8 +232,22 @@ impl PyParquetWriterOptions {
         maximum_buffered_record_batches_per_stream: usize,
     ) -> PyResult<Self> {
         let writer_version =
-            datafusion::common::parquet_config::DFParquetWriterVersion::from_str(writer_version)
-                .map_err(py_datafusion_err)?;
+            DFParquetWriterVersion::from_str(writer_version).map_err(py_datafusion_err)?;
+        let compression = compression
+            .as_deref()
+            .map(DFParquetCompression::from_str)
+            .transpose()
+            .map_err(py_datafusion_err)?;
+        let statistics_enabled = statistics_enabled
+            .as_deref()
+            .map(DFParquetStatistics::from_str)
+            .transpose()
+            .map_err(py_datafusion_err)?;
+        let encoding = encoding
+            .as_deref()
+            .map(DFParquetEncoding::from_str)
+            .transpose()
+            .map_err(py_datafusion_err)?;
         Ok(Self {
             options: ParquetOptions {
                 data_pagesize_limit,
@@ -1120,7 +1137,7 @@ impl PyDataFrame {
         }
 
         let mut options = TableParquetOptions::default();
-        options.global.compression = Some(compression_string);
+        options.global.compression = Some(DFParquetCompression::from_str(&compression_string)?);
         let write_options = write_options
             .map(DataFrameWriteOptions::from)
             .unwrap_or_default();

@@ -22,7 +22,7 @@ use std::str::FromStr;
 use std::sync::Arc;
 
 use arrow::array::RecordBatchReader;
-use arrow::ffi_stream::ArrowArrayStreamReader;
+use arrow::ffi_stream::RecordBatchStreamReader;
 use arrow::pyarrow::FromPyArrow;
 use datafusion::arrow::datatypes::{DataType, Schema, SchemaRef};
 use datafusion::arrow::pyarrow::PyArrowType;
@@ -695,7 +695,7 @@ impl PySessionContext {
         py: Python,
     ) -> PyDataFusionResult<PyDataFrame> {
         let (schema, batches) =
-            if let Ok(stream_reader) = ArrowArrayStreamReader::from_pyarrow_bound(&data) {
+            if let Ok(stream_reader) = RecordBatchStreamReader::from_pyarrow_bound(&data) {
                 // Works for any object that implements __arrow_c_stream__ in pycapsule.
 
                 let schema = stream_reader.schema().as_ref().to_owned();
