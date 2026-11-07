@@ -1669,7 +1669,7 @@ def test_sql_with_options_no_dml(ctx):
 
 
 def test_sql_with_options_no_statements(ctx):
-    sql = "SET time zone = 1;"
+    sql = "SET time zone = 'UTC';"
     ctx.sql(sql)
     options = SQLOptions().with_allow_statements(allow=False)
     with pytest.raises(Exception, match="SetVariable"):
@@ -1789,7 +1789,7 @@ def test_read_csv_with_options(tmp_path, as_read, global_ctx):
         [
             pa.array(["Alice", "Bob", "Phil", "Karin"]),
             pa.array([30, 25, 75, 50]),
-            pa.array(["New York; NY", None, "Detroit' MI", "Stockholm\nSweden"]),
+            pa.array(["New York; NY", "", "Detroit' MI", "Stockholm\nSweden"]),
         ],
         names=["column_1", "column_2", "column_3"],
     )
@@ -1811,7 +1811,7 @@ def test_read_csv_with_options(tmp_path, as_read, global_ctx):
         [
             pa.array(["Alice", "Bob", "Phil", "Karin"]),
             pa.array([30.0, 25.0, 75.0, 50.0]),
-            pa.array(["New York; NY", None, "Detroit' MI", "Stockholm\nSweden"]),
+            pa.array(["New York; NY", "", "Detroit' MI", "Stockholm\nSweden"]),
         ],
         schema=schema,
     )

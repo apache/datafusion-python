@@ -156,7 +156,7 @@ impl PyJoin {
         Ok(self.join.right.as_ref().clone().into())
     }
 
-    /// Retrieves the right input `LogicalPlan` to this `Join` node
+    /// Retrieves the equality keys of this `Join` node
     fn on(&self) -> PyResult<Vec<(PyExpr, PyExpr)>> {
         Ok(self
             .join

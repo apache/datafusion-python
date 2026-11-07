@@ -85,6 +85,8 @@ EXPR_TYPE_ERROR = "Use col()/column() or lit()/literal() to construct expression
 
 Alias = expr_internal.Alias
 Analyze = expr_internal.Analyze
+AsOfJoin = expr_internal.AsOfJoin
+AsOfMatch = expr_internal.AsOfMatch
 Aggregate = expr_internal.Aggregate
 AggregateFunction = expr_internal.AggregateFunction
 Between = expr_internal.Between
@@ -95,6 +97,7 @@ Column = expr_internal.Column
 CopyTo = expr_internal.CopyTo
 CreateCatalog = expr_internal.CreateCatalog
 CreateCatalogSchema = expr_internal.CreateCatalogSchema
+CreateExternalCatalog = expr_internal.CreateExternalCatalog
 CreateExternalTable = expr_internal.CreateExternalTable
 
 
@@ -123,9 +126,9 @@ CreateIndex = expr_internal.CreateIndex
 CreateMemoryTable = expr_internal.CreateMemoryTable
 CreateView = expr_internal.CreateView
 Deallocate = expr_internal.Deallocate
-DescribeTable = expr_internal.DescribeTable
 Distinct = expr_internal.Distinct
 DmlStatement = expr_internal.DmlStatement
+DropCatalog = expr_internal.DropCatalog
 DropCatalogSchema = expr_internal.DropCatalogSchema
 DropFunction = expr_internal.DropFunction
 DropTable = expr_internal.DropTable
@@ -154,6 +157,8 @@ JoinType = expr_internal.JoinType
 Like = expr_internal.Like
 Limit = expr_internal.Limit
 Literal = expr_internal.Literal
+MaterializedCte = expr_internal.MaterializedCte
+MaterializedCteScan = expr_internal.MaterializedCteScan
 Negative = expr_internal.Negative
 Not = expr_internal.Not
 OperateFunctionArg = expr_internal.OperateFunctionArg
@@ -166,6 +171,7 @@ Repartition = expr_internal.Repartition
 ScalarSubquery = expr_internal.ScalarSubquery
 ScalarVariable = expr_internal.ScalarVariable
 SetVariable = expr_internal.SetVariable
+Show = expr_internal.Show
 SimilarTo = expr_internal.SimilarTo
 Sort = expr_internal.Sort
 Subquery = expr_internal.Subquery
@@ -192,6 +198,8 @@ __all__ = [
     "AggregateFunction",
     "Alias",
     "Analyze",
+    "AsOfJoin",
+    "AsOfMatch",
     "Between",
     "BinaryExpr",
     "Case",
@@ -201,6 +209,7 @@ __all__ = [
     "CopyTo",
     "CreateCatalog",
     "CreateCatalogSchema",
+    "CreateExternalCatalog",
     "CreateExternalTable",
     "CreateFunction",
     "CreateFunctionBody",
@@ -208,9 +217,9 @@ __all__ = [
     "CreateMemoryTable",
     "CreateView",
     "Deallocate",
-    "DescribeTable",
     "Distinct",
     "DmlStatement",
+    "DropCatalog",
     "DropCatalogSchema",
     "DropFunction",
     "DropTable",
@@ -245,6 +254,8 @@ __all__ = [
     "Limit",
     "Literal",
     "Literal",
+    "MaterializedCte",
+    "MaterializedCteScan",
     "Negative",
     "Not",
     "OperateFunctionArg",
@@ -257,6 +268,7 @@ __all__ = [
     "ScalarSubquery",
     "ScalarVariable",
     "SetVariable",
+    "Show",
     "SimilarTo",
     "Sort",
     "SortExpr",

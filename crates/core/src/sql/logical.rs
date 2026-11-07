@@ -17,7 +17,7 @@
 
 use std::sync::Arc;
 
-use datafusion::logical_expr::{DdlStatement, LogicalPlan, Statement};
+use datafusion::logical_expr::{DdlStatement, LogicalPlan, MaterializedCtePlan, Statement};
 use datafusion_proto::logical_plan::AsLogicalPlan;
 use prost::Message;
 use pyo3::exceptions::PyRuntimeError;
@@ -29,17 +29,19 @@ use crate::context::PySessionContext;
 use crate::errors::PyDataFusionResult;
 use crate::expr::aggregate::PyAggregate;
 use crate::expr::analyze::PyAnalyze;
+use crate::expr::asof_join::PyAsOfJoin;
 use crate::expr::copy_to::PyCopyTo;
 use crate::expr::create_catalog::PyCreateCatalog;
 use crate::expr::create_catalog_schema::PyCreateCatalogSchema;
+use crate::expr::create_external_catalog::PyCreateExternalCatalog;
 use crate::expr::create_external_table::PyCreateExternalTable;
 use crate::expr::create_function::PyCreateFunction;
 use crate::expr::create_index::PyCreateIndex;
 use crate::expr::create_memory_table::PyCreateMemoryTable;
 use crate::expr::create_view::PyCreateView;
-use crate::expr::describe_table::PyDescribeTable;
 use crate::expr::distinct::PyDistinct;
 use crate::expr::dml::PyDmlStatement;
+use crate::expr::drop_catalog::PyDropCatalog;
 use crate::expr::drop_catalog_schema::PyDropCatalogSchema;
 use crate::expr::drop_function::PyDropFunction;
 use crate::expr::drop_table::PyDropTable;
@@ -51,9 +53,11 @@ use crate::expr::filter::PyFilter;
 use crate::expr::join::PyJoin;
 use crate::expr::limit::PyLimit;
 use crate::expr::logical_node::LogicalNode;
+use crate::expr::materialized_cte::{PyMaterializedCte, PyMaterializedCteScan};
 use crate::expr::projection::PyProjection;
 use crate::expr::recursive_query::PyRecursiveQuery;
 use crate::expr::repartition::PyRepartition;
+use crate::expr::show::PyShow;
 use crate::expr::sort::PySort;
 use crate::expr::statement::{
     PyDeallocate, PyExecute, PyPrepare, PyResetVariable, PySetVariable, PyTransactionEnd,
@@ -137,6 +141,9 @@ impl PyLogicalPlan {
                 DdlStatement::CreateExternalTable(plan) => {
                     PyCreateExternalTable::from(plan.as_ref().clone()).to_variant(py)
                 }
+                DdlStatement::CreateExternalCatalog(plan) => {
+                    PyCreateExternalCatalog::from(plan.as_ref().clone()).to_variant(py)
+                }
                 DdlStatement::CreateMemoryTable(plan) => {
                     PyCreateMemoryTable::from(plan.clone()).to_variant(py)
                 }
@@ -150,6 +157,7 @@ impl PyLogicalPlan {
                 DdlStatement::CreateIndex(plan) => PyCreateIndex::from(plan.clone()).to_variant(py),
                 DdlStatement::DropTable(plan) => PyDropTable::from(plan.clone()).to_variant(py),
                 DdlStatement::DropView(plan) => PyDropView::from(plan.clone()).to_variant(py),
+                DdlStatement::DropCatalog(plan) => PyDropCatalog::from(plan.clone()).to_variant(py),
                 DdlStatement::DropCatalogSchema(plan) => {
                     PyDropCatalogSchema::from(plan.clone()).to_variant(py)
                 }
@@ -161,10 +169,19 @@ impl PyLogicalPlan {
                 }
             },
             LogicalPlan::Copy(plan) => PyCopyTo::from(plan.clone()).to_variant(py),
-            LogicalPlan::DescribeTable(plan) => PyDescribeTable::from(plan.clone()).to_variant(py),
+            LogicalPlan::Show(plan) => PyShow::from(plan.clone()).to_variant(py),
             LogicalPlan::RecursiveQuery(plan) => {
                 PyRecursiveQuery::from(plan.clone()).to_variant(py)
             }
+            LogicalPlan::AsOfJoin(plan) => PyAsOfJoin::from(plan.clone()).to_variant(py),
+            LogicalPlan::MaterializedCte(plan) => match plan {
+                MaterializedCtePlan::Cte(cte) => {
+                    PyMaterializedCte::from(cte.clone()).to_variant(py)
+                }
+                MaterializedCtePlan::Scan(scan) => {
+                    PyMaterializedCteScan::from(scan.clone()).to_variant(py)
+                }
+            },
         }
     }
 

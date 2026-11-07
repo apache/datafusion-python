@@ -89,7 +89,7 @@ impl TableProvider for Dataset {
     async fn scan(
         &self,
         _ctx: &dyn Session,
-        projection: Option<&Vec<usize>>,
+        projection: Option<&[usize]>,
         filters: &[Expr],
         // limit can be used to reduce the amount scanned
         // from the datasource as a performance optimization.
@@ -99,7 +99,7 @@ impl TableProvider for Dataset {
     ) -> DFResult<Arc<dyn ExecutionPlan>> {
         Python::attach(|py| {
             let plan: Arc<dyn ExecutionPlan> = Arc::new(
-                DatasetExec::new(py, self.dataset.bind(py), projection.cloned(), filters)
+                DatasetExec::new(py, self.dataset.bind(py), projection, filters)
                     .map_err(|err| DataFusionError::External(Box::new(err)))?,
             );
             Ok(plan)
