@@ -24,6 +24,7 @@ import time
 from pathlib import Path
 from typing import Any
 
+import datafusion
 import numpy as np
 import pyarrow as pa
 import pyarrow.parquet as pq
@@ -2838,6 +2839,15 @@ def test_write_parquet_with_options_created_by(df, tmp_path, created_by):
         parquet = pq.ParquetFile(file)
         metadata = parquet.metadata.to_dict()
         assert metadata["created_by"] == created_by
+
+
+def test_write_parquet_with_options_default_created_by(df, tmp_path):
+    """The default created_by follows the "<application> version <version>" form."""
+    df.write_parquet_with_options(tmp_path, ParquetWriterOptions())
+
+    for file in tmp_path.rglob("*.parquet"):
+        created_by = pq.ParquetFile(file).metadata.created_by
+        assert created_by == f"datafusion-python version {datafusion.__version__}"
 
 
 @pytest.mark.parametrize("statistics_truncate_length", [5, 25, 50])
