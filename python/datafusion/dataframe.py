@@ -44,6 +44,7 @@ overview of the execution model.
 
 from __future__ import annotations
 
+import importlib.metadata as importlib_metadata
 import sys
 import warnings
 from collections.abc import AsyncIterator, Iterable, Iterator, Sequence
@@ -77,6 +78,11 @@ from datafusion.expr import (
 )
 from datafusion.plan import ExecutionPlan, LogicalPlan
 from datafusion.record_batch import RecordBatch, RecordBatchStream
+
+# parquet-java parses created_by as "<application> version <version>" (PARQUET-246).
+_DEFAULT_CREATED_BY = (
+    f"datafusion-python version {importlib_metadata.version('datafusion')}"
+)
 
 if TYPE_CHECKING:
     import pathlib
@@ -214,7 +220,7 @@ class ParquetWriterOptions:
         dictionary_page_size_limit: int = 1024 * 1024,
         statistics_enabled: str | None = "page",
         max_row_group_size: int = 1024 * 1024,
-        created_by: str = "datafusion-python",
+        created_by: str = _DEFAULT_CREATED_BY,
         column_index_truncate_length: int | None = 64,
         statistics_truncate_length: int | None = None,
         data_page_row_count_limit: int = 20_000,
@@ -257,7 +263,8 @@ class ParquetWriterOptions:
             max_row_group_size: Target maximum number of rows in each row group
                 (defaults to 1M rows). Writing larger row groups requires more memory
                 to write, but can get better compression and be faster to read.
-            created_by: Sets "created by" property.
+            created_by: Sets "created by" property. Defaults to
+                ``datafusion-python version <version>``.
             column_index_truncate_length: Sets column index truncate length.
             statistics_truncate_length: Sets statistics truncate length. If ``None``,
                 uses the default parquet writer setting.
