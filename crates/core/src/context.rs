@@ -44,6 +44,7 @@ use datafusion::execution::options::{ArrowReadOptions, ReadOptions};
 use datafusion::execution::runtime_env::RuntimeEnvBuilder;
 use datafusion::execution::session_state::SessionStateBuilder;
 use datafusion::execution::{FunctionRegistry, TaskContextProvider};
+use datafusion::physical_plan::ExecutionPlanProperties;
 use datafusion::prelude::{
     AvroReadOptions, CsvReadOptions, DataFrame, JsonReadOptions, ParquetReadOptions,
 };
@@ -120,17 +121,28 @@ impl From<SessionConfig> for PySessionConfig {
 
 #[pymethods]
 impl PySessionConfig {
+    /// Build a config, optionally applying options by key.
+    ///
+    /// Each entry goes through the same fallible path as [`Self::set`] rather
+    /// than `SessionConfig::set`, which forwards to `set_str` and unwraps: an
+    /// unknown namespace would abort as a `PanicException` before any of the
+    /// remaining entries were applied. Replaying a settings dictionary is the
+    /// reason this constructor takes one, and
+    /// `information_schema.df_settings` lists keys it cannot accept.
     #[pyo3(signature = (config_options=None))]
     #[new]
-    fn new(config_options: Option<HashMap<String, String>>) -> Self {
+    fn new(config_options: Option<HashMap<String, String>>) -> PyResult<Self> {
         let mut config = SessionConfig::new();
         if let Some(hash_map) = config_options {
             for (k, v) in &hash_map {
-                config = config.set(k, &ScalarValue::Utf8(Some(v.clone())));
+                config
+                    .options_mut()
+                    .set(k, v)
+                    .map_err(from_datafusion_error)?;
             }
         }
 
-        Self { config }
+        Ok(Self { config })
     }
 
     fn with_create_default_catalog_and_schema(&self, enabled: bool) -> Self {
@@ -193,8 +205,25 @@ impl PySessionConfig {
         Self::from(self.config.clone().with_parquet_pruning(enabled))
     }
 
-    fn set(&self, key: &str, value: &str) -> Self {
-        Self::from(self.config.clone().set_str(key, value))
+    /// Set a config option by key.
+    ///
+    /// Not routed through `SessionConfig::set_str`, which unwraps the result:
+    /// an unknown namespace -- `datafusion.runtime.*`, or a config extension
+    /// that has not been installed yet -- would abort as a `PanicException`
+    /// rather than raise. `information_schema.df_settings` lists keys in both
+    /// of those categories, so replaying it is otherwise unsafe.
+    ///
+    /// Mapped with `from_datafusion_error` rather than propagated as a
+    /// `PyDataFusionError`, whose blanket conversion yields a bare `Exception`.
+    /// A rejected key or value is an argument error, so it raises `ValueError`
+    /// the way an out-of-range partition index does in `execute`.
+    fn set(&self, key: &str, value: &str) -> PyResult<Self> {
+        let mut config = self.config.clone();
+        config
+            .options_mut()
+            .set(key, value)
+            .map_err(from_datafusion_error)?;
+        Ok(Self::from(config))
     }
 
     pub fn with_extension(&self, extension: Bound<PyAny>) -> PyResult<Self> {
@@ -1407,12 +1436,20 @@ impl PySessionContext {
     pub fn execute(
         &self,
         plan: PyExecutionPlan,
-        part: usize,
+        partition: usize,
         py: Python,
     ) -> PyDataFusionResult<PyRecordBatchStream> {
-        let ctx: TaskContext = TaskContext::from(&self.ctx.state());
         let plan = plan.plan.clone();
-        let stream = spawn_future(py, async move { plan.execute(part, Arc::new(ctx)) })?;
+        let partition_count = plan.output_partitioning().partition_count();
+        if partition >= partition_count {
+            return Err(PyValueError::new_err(format!(
+                "Partition index {partition} is out of range for a plan with \
+                 {partition_count} partition(s)"
+            ))
+            .into());
+        }
+        let ctx: TaskContext = TaskContext::from(&self.ctx.state());
+        let stream = spawn_future(py, async move { plan.execute(partition, Arc::new(ctx)) })?;
         Ok(PyRecordBatchStream::new(stream))
     }
 

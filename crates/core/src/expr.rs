@@ -29,7 +29,7 @@ use datafusion::logical_expr::expr::{
 use datafusion::logical_expr::utils::exprlist_to_fields;
 use datafusion::logical_expr::{
     Between, BinaryExpr, Case, Cast, Expr, ExprFuncBuilder, ExprFunctionExt, Like, LogicalPlan,
-    Operator, TryCast, WindowFunctionDefinition, col, lit, lit_with_metadata,
+    Operator, TryCast, WindowFrame, WindowFunctionDefinition, col, lit, lit_with_metadata,
 };
 use datafusion_proto::logical_plan::{from_proto, to_proto};
 use prost::Message;
@@ -55,7 +55,7 @@ use crate::expr::aggregate_expr::PyAggregateFunction;
 use crate::expr::binary_expr::PyBinaryExpr;
 use crate::expr::column::PyColumn;
 use crate::expr::literal::PyLiteral;
-use crate::functions::add_builder_fns_to_window;
+use crate::functions::apply_window_options;
 use crate::pyarrow_util::scalar_to_pyarrow;
 use crate::sql::logical::PyLogicalPlan;
 
@@ -624,35 +624,34 @@ impl PyExpr {
 
     // Expression Function Builder functions
 
-    pub fn order_by(&self, order_by: Vec<PySortExpr>) -> PyExprFuncBuilder {
-        self.expr
-            .clone()
-            .order_by(to_sort_expressions(order_by))
-            .into()
+    pub fn order_by(&self, order_by: Vec<PySortExpr>) -> PyDataFusionResult<PyExprFuncBuilder> {
+        Ok(PyExprFuncBuilder::from_expr(&self.expr)?.order_by(order_by))
     }
 
-    pub fn filter(&self, filter: PyExpr) -> PyExprFuncBuilder {
-        self.expr.clone().filter(filter.expr.clone()).into()
+    pub fn filter(&self, filter: PyExpr) -> PyDataFusionResult<PyExprFuncBuilder> {
+        PyExprFuncBuilder::from_expr(&self.expr)?.filter(filter)
     }
 
-    pub fn distinct(&self) -> PyExprFuncBuilder {
-        self.expr.clone().distinct().into()
+    pub fn distinct(&self) -> PyDataFusionResult<PyExprFuncBuilder> {
+        PyExprFuncBuilder::from_expr(&self.expr)?.distinct()
     }
 
-    pub fn null_treatment(&self, null_treatment: NullTreatment) -> PyExprFuncBuilder {
-        self.expr
-            .clone()
-            .null_treatment(Some(null_treatment.into()))
-            .into()
+    pub fn null_treatment(
+        &self,
+        null_treatment: NullTreatment,
+    ) -> PyDataFusionResult<PyExprFuncBuilder> {
+        Ok(PyExprFuncBuilder::from_expr(&self.expr)?.null_treatment(null_treatment))
     }
 
-    pub fn partition_by(&self, partition_by: Vec<PyExpr>) -> PyExprFuncBuilder {
-        let partition_by = partition_by.iter().map(|e| e.expr.clone()).collect();
-        self.expr.clone().partition_by(partition_by).into()
+    pub fn partition_by(&self, partition_by: Vec<PyExpr>) -> PyDataFusionResult<PyExprFuncBuilder> {
+        PyExprFuncBuilder::from_expr(&self.expr)?.partition_by(partition_by)
     }
 
-    pub fn window_frame(&self, window_frame: PyWindowFrame) -> PyExprFuncBuilder {
-        self.expr.clone().window_frame(window_frame.into()).into()
+    pub fn window_frame(
+        &self,
+        window_frame: PyWindowFrame,
+    ) -> PyDataFusionResult<PyExprFuncBuilder> {
+        PyExprFuncBuilder::from_expr(&self.expr)?.window_frame(window_frame)
     }
 
     #[pyo3(signature = (partition_by=None, window_frame=None, order_by=None, null_treatment=None))]
@@ -665,21 +664,41 @@ impl PyExpr {
     ) -> PyDataFusionResult<PyExpr> {
         match &self.expr {
             Expr::AggregateFunction(agg_fn) => {
-                let window_fn = Expr::WindowFunction(Box::new(WindowFunction::new(
-                    WindowFunctionDefinition::AggregateUDF(agg_fn.func.clone()),
-                    agg_fn.params.args.clone(),
-                )));
+                let params = &agg_fn.params;
+                // A window never passes an ordering to the accumulator, so an
+                // aggregate's order_by cannot be kept. A WITHIN GROUP function
+                // runs ascending as a window, so only an ascending ordering can
+                // be dropped without changing the result.
+                let order_by_is_redundant = agg_fn.func.supports_within_group_clause()
+                    && params.order_by.iter().all(|sort| sort.asc);
+                if !params.order_by.is_empty() && !order_by_is_redundant {
+                    return Err(datafusion::error::DataFusionError::Plan(format!(
+                        "Aggregate order_by is not supported when {} is used as a window \
+                         function",
+                        agg_fn.func.name()
+                    ))
+                    .into());
+                }
 
-                add_builder_fns_to_window(
-                    window_fn,
+                let mut window_fn = WindowFunction::new(
+                    WindowFunctionDefinition::AggregateUDF(agg_fn.func.clone()),
+                    params.args.clone(),
+                );
+                window_fn.params.filter = params.filter.clone();
+                window_fn.params.distinct = params.distinct;
+                window_fn.params.null_treatment = params.null_treatment;
+
+                apply_window_options(
+                    PyExprFuncBuilder::from_expr(&Expr::WindowFunction(Box::new(window_fn)))?
+                        .builder,
                     partition_by,
                     window_frame,
                     order_by,
                     null_treatment,
                 )
             }
-            Expr::WindowFunction(_) => add_builder_fns_to_window(
-                self.expr.clone(),
+            Expr::WindowFunction(_) => apply_window_options(
+                PyExprFuncBuilder::from_expr(&self.expr)?.builder,
                 partition_by,
                 window_frame,
                 order_by,
@@ -753,48 +772,177 @@ impl PyExpr {
 #[derive(Debug, Clone)]
 pub struct PyExprFuncBuilder {
     pub builder: ExprFuncBuilder,
+    kind: FuncKind,
+    name: String,
 }
 
-impl From<ExprFuncBuilder> for PyExprFuncBuilder {
-    fn from(builder: ExprFuncBuilder) -> Self {
-        Self { builder }
+/// The kind of function a builder was started from, which decides the
+/// options it accepts. Upstream checks the kind only when a builder is first
+/// created from an `Expr` and silently drops options at `build()`, so it is
+/// checked here on every call instead.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+enum FuncKind {
+    Aggregate,
+    AggregateWindow,
+    Window,
+    /// Not a function; upstream's empty builder makes `build()` raise.
+    Other,
+}
+
+impl PyExprFuncBuilder {
+    /// Start a builder that keeps the options already set on `expr`.
+    ///
+    /// Upstream's `ExprFunctionExt` methods on an `Expr` start from an empty
+    /// builder, so `build()` would reset every option not set again. The Python
+    /// function wrappers already apply their keyword options, so chaining another
+    /// builder method onto their result must not discard them.
+    ///
+    /// A built window function always stores a concrete frame, so whether the user
+    /// chose it is lost and its options cannot be merged without guessing. A window
+    /// function that already has a partition, an order-by, or a frame other than
+    /// the whole-partition default raises instead; see apache/datafusion#25934.
+    fn from_expr(expr: &Expr) -> PyDataFusionResult<Self> {
+        match expr {
+            Expr::AggregateFunction(agg) => {
+                let params = &agg.params;
+                let mut builder = expr.clone().null_treatment(params.null_treatment);
+                if !params.order_by.is_empty() {
+                    builder = builder.order_by(params.order_by.clone());
+                }
+                if let Some(filter) = &params.filter {
+                    builder = builder.filter(filter.as_ref().clone());
+                }
+                if params.distinct {
+                    builder = builder.distinct();
+                }
+                Ok(Self {
+                    builder,
+                    kind: FuncKind::Aggregate,
+                    name: agg.func.name().to_string(),
+                })
+            }
+            Expr::WindowFunction(window) => {
+                let params = &window.params;
+                let name = window.fun.name().to_string();
+                // Any frame but the whole-partition default was set explicitly or
+                // derived from an order-by. A derived one is reported as the order-by.
+                let has_order_by = !params.order_by.is_empty();
+                let derived = |strict| params.window_frame == WindowFrame::new(Some(strict));
+                let has_frame = params.window_frame != WindowFrame::new(None);
+                let set: Vec<&str> = [
+                    ("partition_by", !params.partition_by.is_empty()),
+                    ("order_by", has_order_by),
+                    (
+                        "window_frame",
+                        has_frame && !(has_order_by && (derived(true) || derived(false))),
+                    ),
+                ]
+                .into_iter()
+                .filter_map(|(option, is_set)| is_set.then_some(option))
+                .collect();
+                if !set.is_empty() {
+                    return Err(datafusion::error::DataFusionError::Plan(format!(
+                        "{name} already has window options ({}); set partition_by, order_by, \
+                         and window_frame in one place: the function's keyword arguments, a \
+                         single over(Window(...)), or one builder chain",
+                        set.join(", ")
+                    ))
+                    .into());
+                }
+                let mut builder = expr.clone().null_treatment(params.null_treatment);
+                if let Some(filter) = &params.filter {
+                    builder = builder.filter(filter.as_ref().clone());
+                }
+                if params.distinct {
+                    builder = builder.distinct();
+                }
+                let kind = match window.fun {
+                    WindowFunctionDefinition::AggregateUDF(_) => FuncKind::AggregateWindow,
+                    WindowFunctionDefinition::WindowUDF(_) => FuncKind::Window,
+                };
+                Ok(Self {
+                    builder,
+                    kind,
+                    name,
+                })
+            }
+            _ => Ok(Self {
+                builder: expr.clone().null_treatment(None),
+                kind: FuncKind::Other,
+                name: String::new(),
+            }),
+        }
+    }
+
+    fn with_builder(&self, builder: ExprFuncBuilder) -> Self {
+        Self {
+            builder,
+            kind: self.kind,
+            name: self.name.clone(),
+        }
+    }
+
+    fn require_aggregate(&self, option: &str) -> PyDataFusionResult<()> {
+        if self.kind == FuncKind::Window {
+            return Err(datafusion::error::DataFusionError::Plan(format!(
+                "{option}() applies only to aggregate functions, including one used as a \
+                 window function; {} is a window function",
+                self.name
+            ))
+            .into());
+        }
+        Ok(())
+    }
+
+    fn require_window(&self, option: &str) -> PyDataFusionResult<()> {
+        if self.kind == FuncKind::Aggregate {
+            return Err(datafusion::error::DataFusionError::Plan(format!(
+                "{option}() applies only to window functions; {} is an aggregate function, \
+                 use over() to run it as a window function",
+                self.name
+            ))
+            .into());
+        }
+        Ok(())
     }
 }
 
 #[pymethods]
 impl PyExprFuncBuilder {
     pub fn order_by(&self, order_by: Vec<PySortExpr>) -> PyExprFuncBuilder {
-        self.builder
-            .clone()
-            .order_by(to_sort_expressions(order_by))
-            .into()
+        self.with_builder(self.builder.clone().order_by(to_sort_expressions(order_by)))
     }
 
-    pub fn filter(&self, filter: PyExpr) -> PyExprFuncBuilder {
-        self.builder.clone().filter(filter.expr.clone()).into()
+    pub fn filter(&self, filter: PyExpr) -> PyDataFusionResult<PyExprFuncBuilder> {
+        self.require_aggregate("filter")?;
+        Ok(self.with_builder(self.builder.clone().filter(filter.expr)))
     }
 
-    pub fn distinct(&self) -> PyExprFuncBuilder {
-        self.builder.clone().distinct().into()
+    pub fn distinct(&self) -> PyDataFusionResult<PyExprFuncBuilder> {
+        self.require_aggregate("distinct")?;
+        Ok(self.with_builder(self.builder.clone().distinct()))
     }
 
     pub fn null_treatment(&self, null_treatment: NullTreatment) -> PyExprFuncBuilder {
-        self.builder
-            .clone()
-            .null_treatment(Some(null_treatment.into()))
-            .into()
+        self.with_builder(
+            self.builder
+                .clone()
+                .null_treatment(Some(null_treatment.into())),
+        )
     }
 
-    pub fn partition_by(&self, partition_by: Vec<PyExpr>) -> PyExprFuncBuilder {
-        let partition_by = partition_by.iter().map(|e| e.expr.clone()).collect();
-        self.builder.clone().partition_by(partition_by).into()
+    pub fn partition_by(&self, partition_by: Vec<PyExpr>) -> PyDataFusionResult<PyExprFuncBuilder> {
+        self.require_window("partition_by")?;
+        let partition_by = partition_by.into_iter().map(|e| e.expr).collect();
+        Ok(self.with_builder(self.builder.clone().partition_by(partition_by)))
     }
 
-    pub fn window_frame(&self, window_frame: PyWindowFrame) -> PyExprFuncBuilder {
-        self.builder
-            .clone()
-            .window_frame(window_frame.into())
-            .into()
+    pub fn window_frame(
+        &self,
+        window_frame: PyWindowFrame,
+    ) -> PyDataFusionResult<PyExprFuncBuilder> {
+        self.require_window("window_frame")?;
+        Ok(self.with_builder(self.builder.clone().window_frame(window_frame.into())))
     }
 
     pub fn build(&self) -> PyDataFusionResult<PyExpr> {

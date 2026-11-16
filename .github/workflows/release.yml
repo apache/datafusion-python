@@ -27,6 +27,7 @@ on:
   push:
     branches:
       - "main"
+      - "branch-*"
     tags:
       - "*-rc*"      # Release candidates (e.g., 45.0.0-rc1)
       - "[0-9]+.*"   # Release tags (e.g., 45.0.0)

@@ -22,7 +22,8 @@ from datetime import datetime, timezone
 import pyarrow as pa
 import pyarrow.compute as pc
 import pytest
-from datafusion import Accumulator, column, udaf
+from datafusion import Accumulator, SessionContext, column, udaf
+from datafusion.expr import Window
 
 
 class Summarize(Accumulator):
@@ -168,6 +169,32 @@ def test_udaf_decorator_aggregate(df):
     assert result.column(0) == pa.array([1.0 + 2.0 + 3.0])
 
 
+def test_udaf_decorator_keyword_arguments(df):
+    @udaf(
+        input_types=pa.float64(),
+        return_type=pa.float64(),
+        state_type=[pa.float64()],
+        volatility="immutable",
+    )
+    def summarize():
+        return Summarize()
+
+    result = df.aggregate([], [summarize(column("a"))]).collect()[0]
+    assert result.column(0) == pa.array([1.0 + 2.0 + 3.0])
+
+
+def test_udaf_function_keyword_arguments(df):
+    summarize = udaf(
+        accum=Summarize,
+        input_types=pa.float64(),
+        return_type=pa.float64(),
+        state_type=[pa.float64()],
+        volatility="immutable",
+    )
+    result = df.aggregate([], [summarize(column("a"))]).collect()[0]
+    assert result.column(0) == pa.array([1.0 + 2.0 + 3.0])
+
+
 @pytest.mark.parametrize("as_scalar", [True, False])
 def test_udaf_aggregate_with_arguments(df, as_scalar):
     bias = 10.0
@@ -249,6 +276,59 @@ def test_register_udaf(ctx, df) -> None:
     df_result = ctx.sql("select summarize(b) from test_table")
 
     assert df_result.collect()[0][0][0].as_py() == 14.0
+
+
+@pytest.fixture
+def distinct_ctx():
+    ctx = SessionContext()
+    ctx.register_udaf(
+        udaf(
+            Summarize,
+            pa.float64(),
+            pa.float64(),
+            [pa.float64()],
+            volatility="immutable",
+        )
+    )
+    ctx.from_pydict({"v": [1.0, 1.0, 1.0, 5.0]}, name="t")
+    return ctx
+
+
+@pytest.mark.parametrize(
+    "run",
+    [
+        pytest.param(
+            lambda ctx, summarize: ctx.table("t").aggregate(
+                [], [summarize(column("v")).distinct().build().alias("r")]
+            ),
+            id="distinct aggregate",
+        ),
+        pytest.param(
+            lambda ctx, summarize: ctx.table("t").select(
+                summarize(column("v")).over(Window()).distinct().build().alias("r")
+            ),
+            id="distinct window",
+        ),
+    ],
+)
+def test_udaf_distinct_raises(distinct_ctx, run):
+    # The Python accumulator cannot deduplicate, so it would count every row.
+    summarize = udaf(
+        Summarize,
+        pa.float64(),
+        pa.float64(),
+        [pa.float64()],
+        volatility="immutable",
+    )
+    with pytest.raises(Exception, match="DISTINCT is not supported"):
+        run(distinct_ctx, summarize).collect()
+
+
+def test_udaf_distinct_rewritten_to_group_by_runs(distinct_ctx):
+    # The optimizer groups by the distinct values, so the accumulator never
+    # sees DISTINCT.
+    result = distinct_ctx.sql("select summarize(distinct v) as r from t")
+    assert result.collect_column("r").to_pylist() == [6.0]
 
 
 @pytest.mark.parametrize("wrap_in_scalar", [True, False])

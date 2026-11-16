@@ -44,19 +44,21 @@ overview of the execution model.
 
 from __future__ import annotations
 
+import sys
 import warnings
 from collections.abc import AsyncIterator, Iterable, Iterator, Sequence
 from typing import (
     TYPE_CHECKING,
     Any,
     Literal,
+    cast,
     overload,
 )
 
-try:
-    from warnings import deprecated  # Python 3.13+
-except ImportError:
-    from typing_extensions import deprecated  # Python 3.12
+if sys.version_info >= (3, 13):
+    from warnings import deprecated
+else:
+    from typing_extensions import deprecated
 
 from datafusion._internal import DataFrame as DataFrameInternal
 from datafusion._internal import DataFrameWriteOptions as DataFrameWriteOptionsInternal
@@ -106,6 +108,32 @@ class ExplainFormat(Enum):
 
     GRAPHVIZ = "graphviz"
     """Graphviz DOT format for graph rendering."""
+
+
+class ExplainAnalyzeLevel(Enum):
+    """Which metrics :py:meth:`DataFrame.explain` reports when ``analyze=True``."""
+
+    SUMMARY = "summary"
+    """Common metrics for finding which operator is slow."""
+
+    DEV = "dev"
+    """All metrics, including those for deep operator-level introspection."""
+
+
+class ExplainMetricCategory(Enum):
+    """Category of metric reported by :py:meth:`DataFrame.explain` with ``analyze``."""
+
+    ROWS = "rows"
+    """Row counts, such as ``output_rows``."""
+
+    BYTES = "bytes"
+    """Byte sizes, such as ``output_bytes``."""
+
+    TIMING = "timing"
+    """Elapsed times, such as ``elapsed_compute``."""
+
+    UNCATEGORIZED = "uncategorized"
+    """Metrics that declare no category."""
 
 
 # excerpt from deltalake
@@ -1132,8 +1160,8 @@ class DataFrame:
             if left_on is not None or right_on is not None:
                 error_msg = "`left_on` or `right_on` should not provided with `on`"
                 raise ValueError(error_msg)
-            left_on = on
-            right_on = on
+            # The legacy ``(left, right)`` tuple form was consumed above.
+            left_on = right_on = cast("str | Sequence[str]", on)
         elif left_on is not None or right_on is not None:
             if left_on is None or right_on is None:
                 error_msg = "`left_on` and `right_on` should both be provided."
@@ -1207,6 +1235,9 @@ class DataFrame:
         verbose: bool = False,
         analyze: bool = False,
         format: ExplainFormat | None = None,
+        show_statistics: bool | None = None,
+        analyze_level: ExplainAnalyzeLevel | None = None,
+        analyze_categories: Iterable[ExplainMetricCategory] | None = None,
     ) -> None:
         """Print an explanation of the DataFrame's plan so far.
 
@@ -1217,6 +1248,18 @@ class DataFrame:
             analyze: If ``True``, the plan will run and metrics reported.
             format: Output format for the plan. Defaults to
                 :py:attr:`ExplainFormat.INDENT`.
+            show_statistics: If ``True``, include each operator's statistics.
+                ``None`` uses the ``datafusion.explain.show_statistics``
+                setting.
+            analyze_level: Which metrics to report with ``analyze``. ``None``
+                uses the ``datafusion.explain.analyze_level`` setting.
+            analyze_categories: Report only metrics in these categories with
+                ``analyze``; an empty iterable reports none. ``None`` uses the
+                ``datafusion.explain.analyze_categories`` setting.
+
+        Raises:
+            ValueError: If ``show_statistics`` is set with ``analyze``, or
+                ``analyze_level`` or ``analyze_categories`` is set without it.
 
         Examples:
             Show the plan in tree format:
@@ -1229,9 +1272,31 @@ class DataFrame:
             Show plan with runtime metrics:
 
             >>> df.explain(analyze=True)  # doctest: +SKIP
+
+            Show only row-count metrics:
+
+            >>> from datafusion.dataframe import ExplainMetricCategory
+            >>> df.explain(
+            ...     analyze=True, analyze_categories=[ExplainMetricCategory.ROWS]
+            ... )  # doctest: +SKIP
         """
+        if analyze and show_statistics is not None:
+            msg = "show_statistics cannot be combined with analyze"
+            raise ValueError(msg)
+        if not analyze and analyze_level is not None:
+            msg = "analyze_level requires analyze"
+            raise ValueError(msg)
+        if not analyze and analyze_categories is not None:
+            msg = "analyze_categories requires analyze"
+            raise ValueError(msg)
         fmt = format.value if format is not None else None
-        self.df.explain(verbose, analyze, fmt)
+        level = analyze_level.value if analyze_level is not None else None
+        categories = (
+            [c.value for c in analyze_categories]
+            if analyze_categories is not None
+            else None
+        )
+        self.df.explain(verbose, analyze, fmt, show_statistics, level, categories)
 
     def logical_plan(self) -> LogicalPlan:
         """Return the unoptimized ``LogicalPlan``.
@@ -1281,10 +1346,11 @@ class DataFrame:
         Returns:
             Repartitioned DataFrame.
         """
-        exprs = [self.parse_sql_expr(e) if isinstance(e, str) else e for e in exprs]
-        exprs = expr_list_to_raw_expr_list(exprs)
+        raw_exprs = expr_list_to_raw_expr_list(
+            [self.parse_sql_expr(e) if isinstance(e, str) else e for e in exprs]
+        )
 
-        return DataFrame(self.df.repartition_by_hash(*exprs, num=num))
+        return DataFrame(self.df.repartition_by_hash(*raw_exprs, num=num))
 
     def union(self, other: DataFrame, distinct: bool = False) -> DataFrame:
         """Calculate the union of two :py:class:`DataFrame`.
@@ -1558,7 +1624,7 @@ class DataFrame:
             if compression_level is not None:
                 msg = "compression_level should be None when using ParquetWriterOptions"
                 raise ValueError(msg)
-            self.write_parquet_with_options(path, compression)
+            self.write_parquet_with_options(path, compression, write_options)
             return
 
         if isinstance(compression, str):
@@ -1770,10 +1836,9 @@ class DataFrame:
             >>> df.unnest_columns("a", recursions=[("a", "a", 1)]).to_pydict()
             {'a': [1, 2, 3], 'b': ['x', 'x', 'y']}
         """
-        columns = list(columns)
         return DataFrame(
             self.df.unnest_columns(
-                columns, preserve_nulls=preserve_nulls, recursions=recursions
+                list(columns), preserve_nulls=preserve_nulls, recursions=recursions
             )
         )
 
@@ -1855,7 +1920,8 @@ class DataFrame:
 
         Args:
             value: Value to replace nulls with. Will be cast to match column type.
-            subset: Optional list of column names to fill. If None, fills all columns.
+            subset: Optional list of column names to fill. If None, fills all columns;
+                an empty list fills none.
 
         Returns:
             DataFrame with null values replaced where type casting is possible
@@ -1868,12 +1934,53 @@ class DataFrame:
             >>> filled.sort(col("a")).collect()[0].column("a").to_pylist()
             [0, 1, 3]
 
+            >>> df.fill_null(0, subset=[]).to_pydict()
+            {'a': [1, None, 3], 'b': [None, 5, 6]}
+
         Notes:
             - Only fills nulls in columns where the value can be cast to the column type
             - For columns where casting fails, the original column is kept unchanged
             - For columns not in subset, the original column is kept unchanged
+            - Fails on a DataFrame with an uppercase or dotted column name; see
+              :ref:`fill_column_names`
         """
+        if subset is not None and len(subset) == 0:
+            return self
         return DataFrame(self.df.fill_null(value, subset))
+
+    def fill_nan(self, value: float, subset: list[str] | None = None) -> DataFrame:
+        """Fill NaN values in floating-point columns with a value.
+
+        Only floating-point columns are changed; others are kept unchanged, as is
+        any column ``value`` cannot be cast to. NaN is distinct from null, which
+        :py:meth:`fill_null` handles. Fails on a DataFrame with an uppercase or
+        dotted column name; see :ref:`fill_column_names`.
+
+        Args:
+            value: Value to replace NaN with. Will be cast to match column type.
+            subset: Optional list of column names to fill. If None, fills all
+                floating-point columns; an empty list fills none.
+
+        Returns:
+            DataFrame with NaN values replaced.
+
+        Examples:
+            >>> from datafusion import SessionContext
+            >>> ctx = SessionContext()
+            >>> nan = float("nan")
+            >>> df = ctx.from_pydict({"a": [1.0, nan, None], "b": [nan, 2.0, 3.0]})
+            >>> df.fill_nan(0.0).to_pydict()
+            {'a': [1.0, 0.0, None], 'b': [0.0, 2.0, 3.0]}
+
+            >>> df.fill_nan(0.0, subset=["a"]).collect_column("b")[0].as_py()
+            nan
+
+            >>> df.fill_nan(0.0, subset=[]).collect_column("b")[0].as_py()
+            nan
+        """
+        if subset is not None and len(subset) == 0:
+            return self
+        return DataFrame(self.df.fill_nan(value, subset))
 
 
 class InsertOp(Enum):

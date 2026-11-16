@@ -744,18 +744,19 @@ The `functions` module (imported as `F`) provides 290+ functions. Key categories
 `initcap`, `ascii`, `chr`, `left`, `right`, `strpos`, `translate`, `overlay`,
 `levenshtein`
 
-`F.substr(str, start)` takes **only two arguments** and returns the tail of
-the string from `start` onward — passing a third length argument raises
-`TypeError: substr() takes 2 positional arguments but 3 were given`. For the
-SQL-style 3-arg form (`SUBSTRING(str FROM start FOR length)`), use
-`F.substring(col("s"), lit(start), lit(length))`. For a fixed-length prefix,
-`F.left(col("s"), lit(n))` is cleanest.
+`F.substr(str, start)` returns the tail of the string from `start` onward;
+`F.substr(str, start, length=n)` returns `n` characters from `start`, like
+SQL's `SUBSTRING(str FROM start FOR length)`. `start` and `length` accept
+native ints. `F.substring(str, start, length)` is the same with `length`
+required. For a fixed-length prefix, `F.left(col("s"), lit(n))` is cleanest.
+
+*The `length` argument to `substr` requires datafusion-python 55 or newer.
+On earlier versions a third argument raises `TypeError: substr() takes 2
+positional arguments but 3 were given`; use `F.substring` there.*
 
 ```python
-# WRONG — substr does not accept a length argument
-F.substr(col("c_phone"), lit(1), lit(2))
-# CORRECT
-F.substring(col("c_phone"), lit(1), lit(2))   # explicit length
+F.substr(col("c_phone"), 1, length=2)         # first 2 characters
+F.substring(col("c_phone"), lit(1), lit(2))   # same, on any version
 F.left(col("c_phone"), lit(2))                # prefix shortcut
 ```
 

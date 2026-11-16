@@ -157,7 +157,9 @@ In this example, the `repeated_array` column will contain `[[1, 2, 3], [1, 2, 3]
 Some array functions take a *lambda function*: a small function that runs once
 per element. {py:func}`~datafusion.functions.array_transform` maps a lambda over
 every element, {py:func}`~datafusion.functions.array_filter` keeps the elements
-for which a predicate lambda is true, and
+for which a predicate lambda is true,
+{py:func}`~datafusion.functions.array_first` returns the first element that
+satisfies a predicate lambda, and
 {py:func}`~datafusion.functions.array_any_match` returns whether any element
 satisfies a predicate lambda. (Functions that take another function as an
 argument are sometimes called *higher-order* functions.)
@@ -173,6 +175,7 @@ ctx = SessionContext()
 df = ctx.from_pydict({"a": [[1, 2, 3], [4, 5]]})
 df.select(f.array_transform(col("a"), lambda v: v * 2).alias("doubled"))
 df.select(f.array_filter(col("a"), lambda v: v > 2).alias("big_only"))
+df.select(f.array_first(col("a"), lambda v: v > 2).alias("first_big"))
 df.select(f.array_any_match(col("a"), lambda v: v > 3).alias("has_big"))
 ```
 

@@ -466,3 +466,25 @@ def test_udwf_named_function(ctx, count_window_df):
         FOLLOWING) FROM test_table"""
     ).collect()[0]
     assert result.column(0) == pa.array([0, 1, 2])
+
+
+def test_udwf_decorator_keyword_arguments(ctx):
+    @udwf(input_types=[pa.int64()], return_type=pa.int64(), volatility="immutable")
+    def window_count() -> WindowEvaluator:
+        return SimpleWindowCount()
+
+    df = ctx.from_pydict({"a": [1, 2, 3]})
+    result = df.select(window_count(column("a")).alias("c")).collect_column("c")
+    assert result.to_pylist() == [0, 1, 2]
+
+
+def test_udwf_function_keyword_arguments(ctx):
+    window_count = udwf(
+        func=SimpleWindowCount,
+        input_types=[pa.int64()],
+        return_type=pa.int64(),
+        volatility="immutable",
+    )
+    df = ctx.from_pydict({"a": [1, 2, 3]})
+    result = df.select(window_count(column("a")).alias("c")).collect_column("c")
+    assert result.to_pylist() == [0, 1, 2]

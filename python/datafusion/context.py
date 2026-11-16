@@ -44,20 +44,22 @@ execution model.
 
 from __future__ import annotations
 
+import sys
 import uuid
 import warnings
 from typing import TYPE_CHECKING, Any, Protocol
 
-try:
-    from warnings import deprecated  # Python 3.13+
-except ImportError:
-    from typing_extensions import deprecated  # Python 3.12
+if sys.version_info >= (3, 13):
+    from warnings import deprecated
+else:
+    from typing_extensions import deprecated
 
 
 from urllib.parse import urlparse
 
 import pyarrow as pa
 
+from datafusion import extensions as _extensions
 from datafusion.catalog import (
     Catalog,
     CatalogList,
@@ -69,12 +71,6 @@ from datafusion.catalog import (
 )
 from datafusion.dataframe import DataFrame
 from datafusion.expr import sort_list_to_raw_sort_list
-from datafusion.extensions import (
-    QueryPlannerExportable,
-    SessionComponentsExportable,
-    SessionExtensionComponents,
-    SessionPlannerExportable,
-)
 from datafusion.options import (
     DEFAULT_MAX_INFER_SCHEMA,
     CsvReadOptions,
@@ -94,11 +90,27 @@ if TYPE_CHECKING:
 
     import pandas as pd
     import polars as pl  # type: ignore[import]
-    from _typeshed import CapsuleType as _PyCapsule
+
+    if sys.version_info >= (3, 13):
+        from types import CapsuleType as _PyCapsule
+    else:
+        from typing_extensions import CapsuleType as _PyCapsule
 
     from datafusion.catalog import CatalogProvider, Table
     from datafusion.common import DFSchema
     from datafusion.expr import Expr, SortKey
+
+    # Type-only on purpose. `datafusion.extensions` is the one home for the
+    # capsule-getter protocols; importing these at runtime would make them
+    # reachable as `datafusion.context.*`, and for
+    # `PhysicalOptimizerRuleExportable` would restore the 54.0.0 path that
+    # 55.0.0 drops. Runtime checks go through the private `_extensions` alias.
+    from datafusion.extensions import (
+        PhysicalOptimizerRuleExportable,
+        QueryPlannerExportable,
+        SessionComponentsExportable,
+        SessionPlannerExportable,
+    )
     from datafusion.plan import ExecutionPlan, LogicalPlan
     from datafusion.user_defined import (
         AggregateUDF,
@@ -151,16 +163,6 @@ class TableProviderExportable(Protocol):
     def __datafusion_table_provider__(self, session: Any) -> object: ...  # noqa: D105
 
 
-class PhysicalOptimizerRuleExportable(Protocol):
-    """Type hint for object that has __datafusion_physical_optimizer_rule__ PyCapsule.
-
-    The method returns a PyCapsule wrapping an ``FFI_PhysicalOptimizerRule``,
-    typically produced by a separate compiled extension.
-    """
-
-    def __datafusion_physical_optimizer_rule__(self) -> object: ...  # noqa: D105
-
-
 class ExtensionOptionsExportable(Protocol):
     """Type hint for object that has __datafusion_extension_options__ PyCapsule.
 
@@ -190,8 +192,30 @@ class SessionConfig:
     def __init__(self, config_options: dict[str, str] | None = None) -> None:
         """Create a new :py:class:`SessionConfig` with the given configuration options.
 
+        Each entry is applied as though passed to :py:meth:`set`, so the same
+        keys are rejected. See :ref:`configuration`.
+
         Args:
-            config_options: Configuration options.
+            config_options: Options to apply, keyed by fully qualified name.
+
+        Raises:
+            ValueError: If a key names no known option, or a value does not
+                parse as that option's declared type. Which of several bad
+                entries is reported is not defined.
+
+        Example usage:
+
+        >>> from datafusion import SessionConfig, SessionContext
+        >>> ctx = SessionContext(SessionConfig())
+        >>> config = SessionConfig(
+        ...     config_options={"datafusion.execution.batch_size": "1024"}
+        ... )
+        >>> ctx = SessionContext(config.with_information_schema(True))
+        >>> ctx.sql(
+        ...     "select value from information_schema.df_settings"
+        ...     " where name = 'datafusion.execution.batch_size'"
+        ... ).collect()[0]["value"][0]
+        <pyarrow.StringScalar: '1024'>
         """
         self.config_internal = SessionConfigInternal(config_options)
 
@@ -364,14 +388,37 @@ class SessionConfig:
         return self
 
     def set(self, key: str, value: str) -> SessionConfig:
-        """Set a configuration option.
+        """Set a configuration option by its fully qualified key.
+
+        Not every key that ``information_schema.df_settings`` lists can be set
+        here: the ``datafusion.runtime.*`` entries come from the runtime
+        environment rather than from the session config. See
+        :ref:`configuration`.
 
         Args:
-        key: Option key.
-        value: Option value.
+            key: Option key including its namespace, such as
+                ``datafusion.execution.batch_size``.
+            value: Option value as a string, parsed according to the type the
+                option declares.
 
         Returns:
-            A new :py:class:`SessionConfig` object with the updated setting.
+            This :py:class:`SessionConfig`, modified in place, so that calls
+            chain.
+
+        Raises:
+            ValueError: If ``key`` names no known option, or if ``value`` does
+                not parse as that option's declared type.
+
+        Example usage:
+
+        >>> from datafusion import SessionConfig, SessionContext
+        >>> config = SessionConfig().set("datafusion.execution.batch_size", "1024")
+        >>> ctx = SessionContext(config.with_information_schema(True))
+        >>> ctx.sql(
+        ...     "select value from information_schema.df_settings"
+        ...     " where name = 'datafusion.execution.batch_size'"
+        ... ).collect()[0]["value"][0]
+        <pyarrow.StringScalar: '1024'>
         """
         self.config_internal = self.config_internal.set(key, value)
         return self
@@ -1270,7 +1317,7 @@ class SessionContext:
                 delimiter=delimiter,
                 schema_infer_max_records=schema_infer_max_records,
                 file_extension=file_extension,
-                file_compression_type=file_compression_type,
+                file_compression_type=file_compression_type or "",
             )
         )
 
@@ -1810,7 +1857,8 @@ class SessionContext:
 
         Args:
             rule: Object exposing ``__datafusion_physical_optimizer_rule__``,
-                a :class:`PhysicalOptimizerRuleExportable`.
+                a
+                :py:class:`~datafusion.extensions.PhysicalOptimizerRuleExportable`.
 
         Examples:
             >>> from datafusion import SessionContext
@@ -1898,7 +1946,8 @@ class SessionContext:
         every capsule has been validated, so a hook that raises leaves the
         session as it was. A hook that *mutates* the context it is handed —
         registering a table, say — is not rolled back, which is why bundle
-        objects must be configuration-only.
+        objects must be configuration-only. See
+        :ref:`extension_bundles_transaction`.
 
         Shares its session with this context — see :py:class:`SessionContext`.
 
@@ -1957,7 +2006,11 @@ class SessionContext:
         """
         for extension in extensions:
             if not isinstance(
-                extension, (SessionComponentsExportable, SessionPlannerExportable)
+                extension,
+                (
+                    _extensions.SessionComponentsExportable,
+                    _extensions.SessionPlannerExportable,
+                ),
             ):
                 msg = (
                     "Extension implements neither "
@@ -1973,10 +2026,10 @@ class SessionContext:
         logical_codecs: list[LogicalExtensionCodecExportable] = []
         physical_codecs: list[PhysicalExtensionCodecExportable] = []
         for extension in extensions:
-            if not isinstance(extension, SessionComponentsExportable):
+            if not isinstance(extension, _extensions.SessionComponentsExportable):
                 continue
             components = extension.__datafusion_session_components__(self)
-            if not isinstance(components, SessionExtensionComponents):
+            if not isinstance(components, _extensions.SessionExtensionComponents):
                 msg = (
                     "__datafusion_session_components__ must return "
                     "SessionExtensionComponents, got "
@@ -1998,7 +2051,7 @@ class SessionContext:
         # rather than wrapping the session's default in an FFI hop.
         planner: _PyCapsule | None = None
         for extension in extensions:
-            if not isinstance(extension, SessionPlannerExportable):
+            if not isinstance(extension, _extensions.SessionPlannerExportable):
                 continue
             fallback = (
                 planner
@@ -2010,6 +2063,14 @@ class SessionContext:
                 continue
             planner = new.ctx._export_query_planner(supplied)
 
+        # The commit step, and the only one that writes to the session. It can
+        # still raise -- `_install_extension_planner` re-imports the capsule
+        # before binding it -- so what keeps the promise is the order, not any
+        # step being incapable of failing: every fallible operation finishes
+        # before the first write. See docs/source/contributor-guide/
+        # ffi-internals.md, "Why `with_extensions` commits last", for what a new
+        # component kind has to do to keep that true.
+        #
         # Rebinding the session's planner is a side effect on state shared with
         # every other handle, so do not pay it for a call that installs nothing
         # -- the same guard `with_python_udf_inlining` carries. With no codec
@@ -2160,7 +2221,7 @@ class SessionContext:
                 schema_infer_max_records=schema_infer_max_records,
                 file_extension=file_extension,
                 table_partition_cols=table_partition_cols,
-                file_compression_type=file_compression_type,
+                file_compression_type=file_compression_type or "",
             )
         )
 
@@ -2376,9 +2437,41 @@ class SessionContext:
         """Creates a :py:class:`~datafusion.dataframe.DataFrame` from a table."""
         return DataFrame(self.ctx.read_table(table))
 
-    def execute(self, plan: ExecutionPlan, partitions: int) -> RecordBatchStream:
-        """Execute the ``plan`` and return the results."""
-        return RecordBatchStream(self.ctx.execute(plan._raw_plan, partitions))
+    def execute(self, plan: ExecutionPlan, partition: int) -> RecordBatchStream:
+        """Execute a single partition of ``plan`` and stream its batches.
+
+        Args:
+            plan: The physical plan to execute.
+            partition: Index of the partition to execute, in
+                ``range(plan.partition_count)``.
+
+        Returns:
+            A stream over the record batches that partition produces.
+
+        Raises:
+            ValueError: If ``partition`` is not a valid index for ``plan``.
+            OverflowError: If ``partition`` is negative, or too large to fit a
+                platform-sized unsigned integer.
+
+        Example usage:
+
+        >>> import pyarrow as pa
+        >>> from datafusion import SessionContext
+        >>> ctx = SessionContext()
+        >>> ctx.register_record_batches(
+        ...     "t", [[pa.record_batch({"a": [1, 2]})], [pa.record_batch({"a": [3]})]]
+        ... )
+        >>> plan = ctx.sql("select a from t").execution_plan()
+        >>> plan.partition_count
+        2
+        >>> sum(
+        ...     batch.to_pyarrow().num_rows
+        ...     for p in range(plan.partition_count)
+        ...     for batch in ctx.execute(plan, p)
+        ... )
+        3
+        """
+        return RecordBatchStream(self.ctx.execute(plan._raw_plan, partition))
 
     @staticmethod
     def _convert_file_sort_order(

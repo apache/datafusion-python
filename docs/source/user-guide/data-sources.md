@@ -89,7 +89,9 @@ ctx.create_dataframe([[batch]]).show()
 ## Object Store
 
 DataFusion has support for multiple storage options in addition to local files.
-The example below requires an appropriate S3 account with access credentials.
+The example below requires access to the S3 bucket. Set `AWS_ACCESS_KEY_ID` and
+`AWS_SECRET_ACCESS_KEY` in the environment before running it. For temporary
+credentials, also set `AWS_SESSION_TOKEN`.
 
 Supported Object Stores are
 
@@ -100,16 +102,17 @@ Supported Object Stores are
 - {py:class}`~datafusion.object_store.MicrosoftAzure`
 
 ```python
+from datafusion import SessionContext
 from datafusion.object_store import AmazonS3
 
 region = "us-east-1"
 bucket_name = "yellow-trips"
 
+ctx = SessionContext()
+
 s3 = AmazonS3(
     bucket_name=bucket_name,
     region=region,
-    access_key_id=os.getenv("AWS_ACCESS_KEY_ID"),
-    secret_access_key=os.getenv("AWS_SECRET_ACCESS_KEY"),
 )
 
 path = f"s3://{bucket_name}/"
@@ -118,6 +121,27 @@ ctx.register_object_store("s3://", s3, None)
 ctx.register_parquet("trips", path)
 
 ctx.table("trips").show()
+```
+
+### Query S3 data with SQL
+
+To reach the same data from SQL, give the S3 path a table name with
+`CREATE EXTERNAL TABLE`. The registered object store carries the credentials and
+the region, so the statement itself needs only the location.
+
+Register the store for the bucket as shown above, then use that same
+{py:class}`~datafusion.context.SessionContext` to create and query the table:
+
+```python
+ctx.sql(
+    f"""
+    CREATE EXTERNAL TABLE trips_sql
+    STORED AS PARQUET
+    LOCATION '{path}'
+    """
+).collect()
+
+ctx.sql("SELECT count(passenger_count) FROM trips_sql").show()
 ```
 
 ## Other DataFrame Libraries

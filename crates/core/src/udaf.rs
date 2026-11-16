@@ -28,7 +28,9 @@ use datafusion::logical_expr::{
     Accumulator, AccumulatorFactoryFunction, AggregateUDF, AggregateUDFImpl, Signature, Volatility,
 };
 use datafusion_ffi::udaf::FFI_AggregateUDF;
-use datafusion_python_util::{CapsuleGetterArg, call_capsule_getter, parse_volatility};
+use datafusion_python_util::{
+    CapsuleGetterArg, call_capsule_getter, parse_volatility, validate_pycapsule,
+};
 use pyo3::prelude::*;
 use pyo3::types::{PyCapsule, PyTuple};
 
@@ -300,7 +302,17 @@ impl AggregateUDFImpl for PythonFunctionAggregateUDF {
         Ok(self.return_type.clone())
     }
 
-    fn accumulator(&self, _acc_args: AccumulatorArgs) -> Result<Box<dyn Accumulator>> {
+    fn accumulator(&self, acc_args: AccumulatorArgs) -> Result<Box<dyn Accumulator>> {
+        // The Python accumulator cannot see the flag, so it would count every
+        // row. A query with a single DISTINCT argument is rewritten by the
+        // optimizer to group by those values; it arrives here without the
+        // flag and still runs.
+        if acc_args.is_distinct {
+            return datafusion::common::not_impl_err!(
+                "DISTINCT is not supported for the Python aggregate UDF {}",
+                self.name
+            );
+        }
         instantiate_accumulator(&self.accumulator)
     }
 
@@ -310,6 +322,7 @@ impl AggregateUDFImpl for PythonFunctionAggregateUDF {
 }
 
 fn aggregate_udf_from_capsule(capsule: &Bound<'_, PyCapsule>) -> PyDataFusionResult<AggregateUDF> {
+    validate_pycapsule(capsule, "datafusion_aggregate_udf")?;
     let data: NonNull<FFI_AggregateUDF> = capsule
         .pointer_checked(Some(c"datafusion_aggregate_udf"))?
         .cast();

@@ -46,13 +46,14 @@ operators and helpers.
 
 from __future__ import annotations
 
+import sys
 from collections.abc import Callable, Iterable, Sequence
-from typing import TYPE_CHECKING, Any, ClassVar
+from typing import TYPE_CHECKING, Any, ClassVar, overload
 
-try:
-    from warnings import deprecated  # Python 3.13+
-except ImportError:
-    from typing_extensions import deprecated  # Python 3.12
+if sys.version_info >= (3, 13):
+    from warnings import deprecated
+else:
+    from typing_extensions import deprecated
 
 import pyarrow as pa
 
@@ -114,7 +115,7 @@ def _create_external_table_location(self: Any) -> str:
     return locations[0] if locations else ""
 
 
-CreateExternalTable.location = _create_external_table_location
+CreateExternalTable.location = _create_external_table_location  # ty: ignore[deprecated]
 
 CreateFunction = expr_internal.CreateFunction
 CreateFunctionBody = expr_internal.CreateFunctionBody
@@ -410,8 +411,18 @@ def _to_raw_expr(value: Expr | str) -> expr_internal.Expr:
     raise TypeError(error)
 
 
+@overload
+def expr_list_to_raw_expr_list(expr_list: None) -> None: ...
+
+
+@overload
 def expr_list_to_raw_expr_list(
-    expr_list: list[Expr] | Expr | None,
+    expr_list: Sequence[Expr | str] | Expr | str,
+) -> list[expr_internal.Expr]: ...
+
+
+def expr_list_to_raw_expr_list(
+    expr_list: Sequence[Expr | str] | Expr | str | None,
 ) -> list[expr_internal.Expr] | None:
     """Convert a sequence of expressions or column names to raw expressions."""
     if isinstance(expr_list, Expr | str):
@@ -425,7 +436,17 @@ def sort_or_default(e: Expr | SortExpr) -> expr_internal.SortExpr:
     """Helper function to return a default Sort if an Expr is provided."""
     if isinstance(e, SortExpr):
         return e.raw_sort
-    return SortExpr(e, ascending=True, nulls_first=True).raw_sort
+    return SortExpr(e, ascending=True, nulls_first=False).raw_sort
+
+
+@overload
+def sort_list_to_raw_sort_list(sort_list: None) -> None: ...
+
+
+@overload
+def sort_list_to_raw_sort_list(
+    sort_list: Sequence[SortKey] | SortKey,
+) -> list[expr_internal.SortExpr]: ...
 
 
 def sort_list_to_raw_sort_list(
@@ -771,7 +792,7 @@ class Expr:  # noqa: PLW1641
             return Expr(functions_internal.array_slice(self.expr, start, stop, step))
         return Expr(self.expr.__getitem__(key))
 
-    def __eq__(self, rhs: object) -> Expr:
+    def __eq__(self, rhs: object) -> Expr:  # ty: ignore[invalid-method-override]
         """Equal to.
 
         Accepts either an expression or any valid PyArrow scalar literal value.
@@ -782,7 +803,7 @@ class Expr:  # noqa: PLW1641
             rhs = Expr.literal(rhs)
         return Expr(self.expr.__eq__(rhs.expr))
 
-    def __ne__(self, rhs: object) -> Expr:
+    def __ne__(self, rhs: object) -> Expr:  # ty: ignore[invalid-method-override]
         """Not equal to.
 
         Accepts either an expression or any valid PyArrow scalar literal value.
@@ -893,7 +914,7 @@ class Expr:  # noqa: PLW1641
         """
         return Expr(self.expr.alias(name, metadata))
 
-    def sort(self, ascending: bool = True, nulls_first: bool = True) -> SortExpr:
+    def sort(self, ascending: bool = True, nulls_first: bool = False) -> SortExpr:
         """Creates a sort :py:class:`Expr` from an existing :py:class:`Expr`.
 
         Args:
@@ -1037,8 +1058,9 @@ class Expr:  # noqa: PLW1641
         """Filter an aggregate function.
 
         This function will create an :py:class:`ExprFuncBuilder` that can be used to
-        set parameters for either window or aggregate functions. If used on any other
-        type of expression, an error will be generated when ``build()`` is called.
+        set parameters for either window or aggregate functions. It raises on a window
+        function unless that is an aggregate used as one. If used on any other type of
+        expression, an error will be generated when ``build()`` is called.
         """
         return ExprFuncBuilder(self.expr.filter(filter.expr))
 
@@ -1046,8 +1068,9 @@ class Expr:  # noqa: PLW1641
         """Only evaluate distinct values for an aggregate function.
 
         This function will create an :py:class:`ExprFuncBuilder` that can be used to
-        set parameters for either window or aggregate functions. If used on any other
-        type of expression, an error will be generated when ``build()`` is called.
+        set parameters for either window or aggregate functions. It raises on a window
+        function unless that is an aggregate used as one. If used on any other type of
+        expression, an error will be generated when ``build()`` is called.
         """
         return ExprFuncBuilder(self.expr.distinct())
 
@@ -1064,26 +1087,37 @@ class Expr:  # noqa: PLW1641
         """Set the partitioning for a window function.
 
         This function will create an :py:class:`ExprFuncBuilder` that can be used to
-        set parameters for either window or aggregate functions. If used on any other
-        type of expression, an error will be generated when ``build()`` is called.
+        set parameters for either window or aggregate functions. It raises on an
+        aggregate function that has not been turned into a window function with
+        :py:meth:`over`. If used on any other type of expression, an error will be
+        generated when ``build()`` is called.
         """
         return ExprFuncBuilder(self.expr.partition_by([e.expr for e in partition_by]))
 
     def window_frame(self, window_frame: WindowFrame) -> ExprFuncBuilder:
-        """Set the frame fora  window function.
+        """Set the frame for a window function.
 
         This function will create an :py:class:`ExprFuncBuilder` that can be used to
-        set parameters for either window or aggregate functions. If used on any other
-        type of expression, an error will be generated when ``build()`` is called.
+        set parameters for either window or aggregate functions. It raises on an
+        aggregate function that has not been turned into a window function with
+        :py:meth:`over`. If used on any other type of expression, an error will be
+        generated when ``build()`` is called.
         """
         return ExprFuncBuilder(self.expr.window_frame(window_frame.window_frame))
 
     def over(self, window: Window) -> Expr:
-        """Turn an aggregate function into a window function.
+        """Evaluate an aggregate or window function over a window.
 
-        This function turns any aggregate function into a window function. With the
+        On an aggregate function this turns it into a window function. With the
         exception of ``partition_by``, how each of the parameters is used is determined
         by the underlying aggregate function.
+
+        On an aggregate, the ``null_treatment``, ``filter``, and ``distinct`` options
+        it was built with are kept, and an ``order_by`` raises; see
+        :ref:`aggregate_over_options`.
+
+        On a window function that already has a ``partition_by``, ``order_by``, or
+        ``window_frame``, this raises; see :ref:`window_function_chaining`.
 
         Args:
             window: Window definition
@@ -1534,6 +1568,15 @@ class Expr:  # noqa: PLW1641
 
 
 class ExprFuncBuilder:
+    """Sets the options of an aggregate or window function.
+
+    ``filter`` and ``distinct`` apply to an aggregate, including one used as a
+    window function; ``partition_by`` and ``window_frame`` apply to a window
+    function. Starting a builder from a window function that already has a
+    ``partition_by``, ``order_by``, or ``window_frame`` raises; see
+    :ref:`window_function_chaining`.
+    """
+
     def __init__(self, builder: expr_internal.ExprFuncBuilder) -> None:
         self.builder = builder
 

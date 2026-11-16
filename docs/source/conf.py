@@ -57,6 +57,7 @@ extensions = [
     # Emits a meta-refresh stub at each old docname listed in `redirects`
     # below, so inbound links to pages that have moved keep working.
     "sphinx_reredirects",
+    "sphinx_copybutton",
 ]
 
 # Old page URLs that have moved. The site is single-version (each release
@@ -121,10 +122,7 @@ def autoapi_skip_member_fn(app, what, name, obj, skip, options) -> bool:  # noqa
         # Re-exports
         ("class", "datafusion.DataFrame"),
         ("class", "datafusion.SessionContext"),
-        ("class", "datafusion.QueryPlannerExportable"),
         ("class", "datafusion.SessionExtensionComponents"),
-        ("class", "datafusion.SessionComponentsExportable"),
-        ("class", "datafusion.SessionPlannerExportable"),
         ("module", "datafusion.common"),
         # Duplicate modules (skip module-level docs to avoid duplication)
         ("module", "datafusion.col"),

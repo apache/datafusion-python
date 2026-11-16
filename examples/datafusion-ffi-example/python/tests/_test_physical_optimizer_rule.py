@@ -17,8 +17,13 @@
 
 from __future__ import annotations
 
+import doctest
+import inspect
+import io
+
 import pyarrow as pa
 from datafusion import SessionContext
+from datafusion.extensions import PhysicalOptimizerRuleExportable
 from datafusion_ffi_example import MyPhysicalOptimizerRule
 
 
@@ -43,3 +48,42 @@ def test_ffi_physical_optimizer_rule_runs_during_planning():
         f"before={before} after={after}"
     )
     assert result[0].column(0).to_pylist() == [1, 2, 3]
+
+
+def test_physical_optimizer_rule_docstring_example_still_runs():
+    """Run the ``PhysicalOptimizerRuleExportable`` docstring example verbatim.
+
+    The example is marked ``+SKIP`` because the main suite has no built FFI
+    extension to import, which is exactly how such an example rots. Here the
+    statements are parsed out of the live docstring, the skip is dropped, and
+    each one is executed.
+
+    Only the ``+SKIP`` statements are taken. The docstring also carries a
+    runnable example above them, which the main suite already executes under
+    ``--doctest-modules``; running it again here would prove nothing.
+
+    Only ``ctx`` is supplied, because the skipped statements go on using the
+    context the runnable block opened. Everything else resolves for real: a
+    renamed class, a changed signature, or a wrong expected output in the
+    docstring fails here.
+    """
+    examples = [
+        example
+        for example in doctest.DocTestParser().get_examples(
+            inspect.getdoc(PhysicalOptimizerRuleExportable)
+        )
+        if example.options.pop(doctest.SKIP, False)
+    ]
+    assert examples, "docstring has no skipped examples to check"
+
+    test = doctest.DocTest(
+        examples,
+        {"ctx": SessionContext()},
+        "PhysicalOptimizerRuleExportable",
+        None,
+        None,
+        None,
+    )
+    output = io.StringIO()
+    results = doctest.DocTestRunner().run(test, out=output.write)
+    assert results.failed == 0, output.getvalue()

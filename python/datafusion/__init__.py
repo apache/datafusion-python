@@ -57,12 +57,8 @@ https://github.com/apache/datafusion-python/blob/main/skills/datafusion_python/S
 
 from __future__ import annotations
 
+import importlib.metadata as importlib_metadata
 from typing import Any
-
-try:
-    import importlib.metadata as importlib_metadata
-except ImportError:
-    import importlib_metadata  # type: ignore[import]
 
 # Public submodules
 from . import functions, ipc, object_store, substrait, unparser
@@ -92,15 +88,16 @@ from .dataframe import (
 )
 from .dataframe_formatter import configure_formatter
 from .expr import Expr, WindowFrame
-from .extensions import (
-    QueryPlannerExportable,
-    SessionComponentsExportable,
-    SessionExtensionComponents,
-    SessionPlannerExportable,
-)
+from .extensions import SessionExtensionComponents
 from .io import read_avro, read_csv, read_json, read_parquet
 from .options import CsvReadOptions
-from .plan import ExecutionPlan, LogicalPlan, Metric, MetricsSet
+from .plan import (
+    ExecutionPlan,
+    LogicalPlan,
+    Metric,
+    MetricsSet,
+    PhysicalPartitioning,
+)
 from .record_batch import RecordBatch, RecordBatchStream
 from .user_defined import (
     Accumulator,
@@ -133,17 +130,15 @@ __all__ = [
     "MetricsSet",
     "ParquetColumnOptions",
     "ParquetWriterOptions",
-    "QueryPlannerExportable",
+    "PhysicalPartitioning",
     "RecordBatch",
     "RecordBatchStream",
     "RuntimeEnvBuilder",
     "SQLOptions",
     "ScalarUDF",
-    "SessionComponentsExportable",
     "SessionConfig",
     "SessionContext",
     "SessionExtensionComponents",
-    "SessionPlannerExportable",
     "Table",
     "TableFunction",
     "TableProviderFactory",

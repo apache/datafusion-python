@@ -75,3 +75,11 @@ def test_ffi_aggregate_call_directly():
     ]
 
     assert result == expected
+
+
+def test_ffi_aggregate_from_bare_capsule():
+    ctx = setup_context_with_table()
+    my_udaf = udaf(MySumUDF().__datafusion_aggregate_udf__())
+
+    result = ctx.table("test_table").aggregate([], [my_udaf(col("a")).alias("r")])
+    assert result.collect_column("r").to_pylist() == [6]

@@ -158,3 +158,38 @@ df = df.fill_null("missing", subset=["name", "category"])
 ```
 
 The fill value will be cast to match each column's type. If casting fails for a column, that column remains unchanged.
+
+## fill_nan
+
+The `fill_nan()` method replaces NaN values in floating-point columns. NaN is
+distinct from NULL, which `fill_null()` handles:
+
+```python
+# Replace NaN with 0.0 in every floating-point column
+df = df.fill_nan(0.0)
+
+# Replace NaN only in specific columns
+df = df.fill_nan(0.0, subset=["price"])
+```
+
+(fill_column_names)=
+
+## Column names with uppercase letters or dots
+
+`fill_null()` and `fill_nan()` fail on a DataFrame that has any column whose
+name contains an uppercase letter or a `.`, even when that column is not in
+`subset`
+([apache/datafusion#25829](https://github.com/apache/datafusion/issues/25829)):
+
+```python
+df = ctx.from_pydict({"Price": [float("nan"), 2.0], "qty": [float("nan"), 1.0]})
+df.fill_nan(0.0, subset=["qty"])
+# Schema error: No field named price. Did you mean '..."Price"'?
+```
+
+Until that is fixed, rename such columns first. Quote the old name so it is
+not normalized:
+
+```python
+df.with_column_renamed('"Price"', "price").fill_nan(0.0, subset=["qty"])
+```

@@ -15,7 +15,7 @@
 # specific language governing permissions and limitations
 # under the License.
 
-"""Tests for the object_store parameter on register/read file methods."""
+"""Tests for object store registration and register/read file methods."""
 
 import contextlib
 from pathlib import Path
@@ -138,3 +138,24 @@ def test_parquet_methods_with_local_object_store(ctx, tmp_path, method_name):
         dataframe = ctx.read_parquet(path, object_store=LocalFileSystem())
 
     assert dataframe.collect()[0].column("value").to_pylist() == [10, 20, 30]
+
+
+def test_sql_external_table_uses_registered_object_store(ctx, tmp_path):
+    """Read a remote URL through a registered store without network access."""
+    table = pa.table({"passenger_count": [1, None, 3]})
+    pq.write_table(table, tmp_path / "trips.parquet")
+
+    # Back the S3 URL with local files to test SQL's registry lookup, not AWS.
+    store = LocalFileSystem(prefix=str(tmp_path))
+    ctx.register_object_store("s3://", store, host="test-bucket")
+    ctx.sql(
+        """
+        CREATE EXTERNAL TABLE trips_sql
+        STORED AS PARQUET
+        LOCATION 's3://test-bucket/'
+        """
+    ).collect()
+
+    assert ctx.table("trips_sql").to_pydict() == table.to_pydict()
+    result = ctx.sql("SELECT count(passenger_count) AS count FROM trips_sql")
+    assert result.to_pydict() == {"count": [2]}

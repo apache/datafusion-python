@@ -17,6 +17,7 @@
 
 use std::sync::Arc;
 
+use datafusion::physical_expr::Partitioning;
 use datafusion::physical_plan::{ExecutionPlan, ExecutionPlanProperties, displayable};
 use datafusion_proto::physical_plan::AsExecutionPlan;
 use prost::Message;
@@ -125,6 +126,95 @@ impl PyExecutionPlan {
     #[getter]
     pub fn partition_count(&self) -> usize {
         self.plan.output_partitioning().partition_count()
+    }
+
+    #[getter]
+    pub fn output_partitioning(&self) -> PyPhysicalPartitioning {
+        self.plan.output_partitioning().clone().into()
+    }
+}
+
+/// How a physical plan's output rows are spread across its partitions.
+///
+/// Distinct from `datafusion.expr.Partitioning`, the *logical* partitioning
+/// recorded on a `Repartition` node and read back with
+/// `Repartition.partitioning_scheme()`. Neither is an argument to anything:
+/// `DataFrame.repartition` takes a count and `repartition_by_hash` takes
+/// expressions and a count. The logical one records the request; this one
+/// reports what the built plan does with it, and they disagree whenever the
+/// optimizer rewrites or drops the repartition. The two Rust enums differ
+/// too -- the logical one has `DistributeBy` and no `UnknownPartitioning`.
+// `skip_from_py_object` because this is a read-only report: nothing accepts a
+// partitioning as an argument, so there is no inbound direction to support.
+// Rust callers that need the `Partitioning` read it off the plan instead.
+#[pyclass(
+    skip_from_py_object,
+    frozen,
+    name = "PhysicalPartitioning",
+    module = "datafusion",
+    subclass
+)]
+#[derive(Debug, Clone)]
+pub struct PyPhysicalPartitioning {
+    partitioning: Partitioning,
+}
+
+#[pymethods]
+impl PyPhysicalPartitioning {
+    /// Which partitioning scheme this is.
+    ///
+    /// `UnknownPartitioning` is what a plan reports when it knows how many
+    /// partitions it has but nothing about how rows are distributed between
+    /// them, which is the common case for a file scan. `RoundRobinBatch` and
+    /// `Hash` come from a `RepartitionExec`.
+    ///
+    /// `Range` is implemented upstream and reaches this getter, but never from
+    /// a plan this package built: `DataFrame.repartition` requests round-robin,
+    /// `repartition_by_hash` requests hash, and SQL has no range-repartition
+    /// syntax. It arrives on a plan built elsewhere -- decoded by
+    /// `ExecutionPlan.from_bytes`, or returned by an extension library's query
+    /// planner -- since `datafusion-proto` and `datafusion-ffi` both carry
+    /// `Partitioning::Range` faithfully.
+    #[getter]
+    pub fn scheme(&self) -> &'static str {
+        match self.partitioning {
+            Partitioning::RoundRobinBatch(_) => "RoundRobinBatch",
+            Partitioning::Hash(_, _) => "Hash",
+            Partitioning::Range(_) => "Range",
+            Partitioning::UnknownPartitioning(_) => "UnknownPartitioning",
+        }
+    }
+
+    #[getter]
+    pub fn partition_count(&self) -> usize {
+        self.partitioning.partition_count()
+    }
+
+    /// The expressions rows are hashed on, or `None` for other schemes.
+    ///
+    /// These are physical expressions, which have no Python representation, so
+    /// they are returned in their displayed form.
+    ///
+    /// `None` for `Range` too, whose ordering and split points this class does
+    /// not expose yet.
+    #[getter]
+    pub fn hash_expressions(&self) -> Option<Vec<String>> {
+        match &self.partitioning {
+            Partitioning::Hash(exprs, _) => {
+                Some(exprs.iter().map(|expr| format!("{expr}")).collect())
+            }
+            _ => None,
+        }
+    }
+
+    fn __repr__(&self) -> String {
+        format!("{}", self.partitioning)
+    }
+}
+
+impl From<Partitioning> for PyPhysicalPartitioning {
+    fn from(partitioning: Partitioning) -> Self {
+        Self { partitioning }
     }
 }
 

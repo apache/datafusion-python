@@ -62,7 +62,7 @@ impl Display for PyJoinType {
     }
 }
 
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone)]
 #[pyclass(
     from_py_object,
     frozen,

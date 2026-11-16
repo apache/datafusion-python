@@ -393,11 +393,12 @@ The available aggregate functions are:
       - {py:func}`datafusion.functions.regr_avgy`
       - {py:func}`datafusion.functions.regr_sxx`
       - {py:func}`datafusion.functions.regr_syy`
-      - {py:func}`datafusion.functions.regr_slope`
+      - {py:func}`datafusion.functions.regr_sxy`
 07. Positional Functions
     : - {py:func}`datafusion.functions.first_value`
       - {py:func}`datafusion.functions.last_value`
       - {py:func}`datafusion.functions.nth_value`
+      - {py:func}`datafusion.functions.any_value`
 08. String Functions
     : - {py:func}`datafusion.functions.string_agg`
 09. Percentile Functions

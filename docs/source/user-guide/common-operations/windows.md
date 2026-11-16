@@ -135,11 +135,54 @@ df.select(
 )
 ```
 
+(window_function_chaining)=
+
+#### Chaining onto a window function
+
+Set a window function's `partition_by`, `order_by`, and `window_frame` in one
+place: its keyword arguments, a single `over()`, or one builder chain ending in
+`build()`. Chaining a builder method or `over()` onto a window function that
+already has any of them raises:
+
+```python
+# Raises: lead already has window options (order_by)
+f.lead(col("v"), order_by="t").over(Window(partition_by=[col("g")]))
+
+# Set them together instead.
+f.lead(col("v")).over(Window(partition_by=[col("g")], order_by="t"))
+```
+
+A built window function stores a concrete frame with no record of whether you
+chose it or it was derived from `order_by`, so the options cannot be merged
+without guessing. Merging may become possible once
+[apache/datafusion#25934](https://github.com/apache/datafusion/issues/25934)
+is resolved.
+
+The `null_treatment` already set is kept, as are `filter` and `distinct` on an
+aggregate used as a window function. The whole-partition frame counts as no
+frame, so adding an `order_by` derives the running frame, even when you passed
+that frame explicitly:
+
+```python
+whole = WindowFrame("rows", None, None)  # same as the no-order_by default
+
+# Both give a running sum.
+f.sum(col("v")).over(Window()).order_by(col("v")).build()
+f.sum(col("v")).over(Window(window_frame=whole)).order_by(col("v")).build()
+```
+
+To keep that frame, set it after the `order_by`, or pass both in one `Window`:
+
+```python
+f.sum(col("v")).over(Window()).order_by(col("v")).window_frame(whole).build()
+f.sum(col("v")).over(Window(order_by=col("v"), window_frame=whole))
+```
+
 ### Null Treatment
 
 When using aggregate functions as window functions, it is often useful to specify how null values
-should be treated. In order to do this you need to use the builder function. In future releases
-we expect this to be simplified in the interface.
+should be treated. Pass `null_treatment` in the `Window`, or set it on the aggregate itself, which
+`over()` keeps (see {ref}`aggregate_over_options`).
 
 One common usage for handling nulls is the case where you want to find the last value up to the
 current row. In the following example we demonstrate how setting the null treatment to ignore
@@ -194,6 +237,30 @@ df.select(
         )
     ).alias("Average Attack"),
 )
+```
+
+(aggregate_over_options)=
+
+### Options set on the aggregate
+
+`over()` keeps the `filter`, `distinct`, and `null_treatment` options an
+aggregate was built with:
+
+```python
+# Averages the distinct values 1.0 and 4.0.
+f.avg(col("v"), distinct=True).over(Window())
+```
+
+An aggregate's `order_by` raises, as `ORDER BY` inside an aggregate call does
+with `OVER` in SQL. A window does not pass an ordering to the aggregate, so
+the `order_by` in the `Window` only sets the frame and the order of rows. The
+one exception is a `WITHIN GROUP` function such as
+{py:func}`~datafusion.functions.percentile_cont`, which computes ascending as a
+window: an ascending `sort_expression` is accepted, and a descending one raises.
+
+```python
+f.percentile_cont(col("v"), 0.25).over(Window())  # ascending, accepted
+f.percentile_cont(col("v").sort(ascending=False), 0.25).over(Window())  # raises
 ```
 
 ## Available Functions
