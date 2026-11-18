@@ -5349,7 +5349,7 @@ def map_values(map: Expr) -> Expr:
 def map_extract(map: Expr, key: Expr) -> Expr:
     """Returns the value for a given key in the map.
 
-    Returns ``[None]`` if the key is absent.
+    Returns ``[]`` if the key is absent.
 
     Examples:
         >>> ctx = dfn.SessionContext()
@@ -5385,7 +5385,7 @@ def map_entries(map: Expr) -> Expr:
 def element_at(map: Expr, key: Expr) -> Expr:
     """Returns the value for a given key in the map.
 
-    Returns ``[None]`` if the key is absent.
+    Returns ``[]`` if the key is absent.
 
     See Also:
         This is an alias for :py:func:`map_extract`.

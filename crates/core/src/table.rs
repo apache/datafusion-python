@@ -160,7 +160,7 @@ impl TableProvider for TempViewTable {
     async fn scan(
         &self,
         state: &dyn Session,
-        projection: Option<&Vec<usize>>,
+        projection: Option<&[usize]>,
         filters: &[Expr],
         limit: Option<usize>,
     ) -> datafusion::common::Result<Arc<dyn ExecutionPlan>> {
@@ -174,8 +174,11 @@ impl TableProvider for TempViewTable {
 
         let mut plan = if let Some(projection) = projection {
             // avoiding adding a redundant projection (e.g. SELECT * FROM view)
-            let current_projection = (0..plan.schema().fields().len()).collect::<Vec<usize>>();
-            if projection == &current_projection {
+            if projection
+                .iter()
+                .copied()
+                .eq(0..plan.schema().fields().len())
+            {
                 plan
             } else {
                 let fields: Vec<Expr> = projection

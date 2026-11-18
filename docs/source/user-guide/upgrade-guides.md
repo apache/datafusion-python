@@ -43,6 +43,28 @@ expr = f.first_value(column("a")).over(
 )
 ```
 
+### `DescribeTable` logical node replaced by `Show`
+
+The `DescribeTable` logical node was replaced by the `Show` node, which
+processes `DESCRIBE`, `SHOW TABLES`, `SHOW COLUMNS`, `SHOW CREATE TABLE`,
+`SHOW FUNCTIONS`, and `SHOW <variable>`. Use the `Show.kind()` method to
+determine the type. Example:
+
+```python
+plan = ctx.sql("describe foo").logical_plan().to_variant()
+assert isinstance(plan, Show)
+plan.kind()  # "columns"
+
+plan = ctx.sql("describe select a from foo").logical_plan().to_variant()
+assert isinstance(plan, Show)
+plan.kind()  # "describe"
+
+plan = ctx.sql("show tables").logical_plan().to_variant()
+assert isinstance(plan, Show)
+plan.kind()  # "tables"
+```
+
+
 ## DataFusion 55.0.0
 
 This release extends the change made in 52.0.0 to the remaining
