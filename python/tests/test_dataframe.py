@@ -298,6 +298,19 @@ def test_select_exprs(df):
     assert result.column(1) == pa.array([3, 3, 3])
 
 
+@pytest.mark.parametrize("use_sql_predicate", [False, True])
+def test_select_exprs_supports_public_dataframe_chaining(df, use_sql_predicate):
+    projected = df.select_exprs("a + b AS total", "a")
+    predicate = "total > 6" if use_sql_predicate else df_col("total") > 6
+    result = (
+        projected.filter(predicate)
+        .select((df_col("total") * 2).alias("doubled"))
+        .sort("doubled")
+        .to_pydict()
+    )
+    assert result == {"doubled": [14, 18]}
+
+
 def test_alias_self_join(df):
     left = df.alias("l")
     right = df.alias("r")
