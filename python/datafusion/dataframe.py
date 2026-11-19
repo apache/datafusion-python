@@ -548,8 +548,15 @@ class DataFrame:
 
         Returns:
             DataFrame only containing the specified columns.
+
+        Examples:
+            >>> ctx = dfn.SessionContext()
+            >>> df = ctx.from_pydict({"a": [1, 2, 3], "b": [4, 5, 6]})
+            >>> projected = df.select_exprs("a", "a + b AS total")
+            >>> projected.filter(col("total") > 6).select("total").to_pydict()
+            {'total': [7, 9]}
         """
-        return self.df.select_exprs(*args)
+        return DataFrame(self.df.select_exprs(*args))
 
     def alias(self, alias: str) -> DataFrame:
         """Assign a table alias to this :py:class:`DataFrame`.
