@@ -3069,6 +3069,58 @@ def test_write_parquet_options(df, tmp_path):
     assert result == expected
 
 
+@pytest.mark.parametrize("use_options_method", [False, True])
+@pytest.mark.parametrize(
+    ("compression", "level", "codec"),
+    [
+        (None, 6, "zstd"),
+        ("zstd(3)", 6, "zstd"),
+        ("gzip(9)", 6, "gzip"),
+        ("brotli(7)", 4, "brotli"),
+        ("gzip", 6, "gzip"),
+    ],
+)
+def test_write_parquet_options_override_compression_level(
+    df, tmp_path, compression, level, codec, use_options_method
+):
+    kwargs = {} if compression is None else {"compression": compression}
+    options = ParquetWriterOptions(**kwargs, compression_level=level)
+    if use_options_method:
+        df.write_parquet_with_options(tmp_path, options)
+    else:
+        df.write_parquet(tmp_path, options)
+
+    files = list(tmp_path.rglob("*.parquet"))
+    assert files
+    for file in files:
+        metadata = pq.ParquetFile(file).metadata
+        for row_group in range(metadata.num_row_groups):
+            for column_index in range(metadata.num_columns):
+                assert (
+                    metadata.row_group(row_group)
+                    .column(column_index)
+                    .compression.lower()
+                    == codec
+                )
+    assert pq.read_table(tmp_path).to_pydict() == df.to_pydict()
+
+
+@pytest.mark.parametrize(
+    ("compression", "level"),
+    [("gzip(6)", 12), ("brotli(7)", 15), ("zstd(3)", 23)],
+)
+def test_write_parquet_options_override_invalid_level(df, tmp_path, compression, level):
+    options = ParquetWriterOptions(compression=compression, compression_level=level)
+    with pytest.raises(Exception, match=r"valid compression range .*? exceeded."):
+        df.write_parquet_with_options(tmp_path, options)
+
+
+def test_write_parquet_options_level_without_codec(df, tmp_path):
+    options = ParquetWriterOptions(compression=None, compression_level=6)
+    with pytest.raises(Exception, match="Unknown or unsupported parquet compression"):
+        df.write_parquet_with_options(tmp_path, options)
+
+
 def test_write_parquet_options_error(df, tmp_path):
     options = ParquetWriterOptions(compression="gzip", compression_level=6)
     with pytest.raises(ValueError):
