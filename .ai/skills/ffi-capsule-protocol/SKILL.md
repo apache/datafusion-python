@@ -187,13 +187,11 @@ an instruction to derive one first. It is not: the factories are handed the
 receiver, and the returned handle shares its allocation. There is nothing to
 keep alive separately and nothing to garbage-collect out from under a provider.
 
-`SessionContext.enable_url_table` is the one method that mints a second
-allocation for a session. Its result must not outlive the receiver, and it also
-forks the session's `SessionState` while keeping its id, so two handles report
-one `session_id()` with divergent configuration. That is a bug rather than a
-design — tracked in
-[apache/datafusion-python#1708](https://github.com/apache/datafusion-python/issues/1708)
-— so do not cite it as precedent for deriving a replacement context.
+`SessionContext.enable_url_table` follows this rule: it rebuilds the catalog
+inside the receiver's existing `SessionState` and returns another handle
+sharing the same `Arc<SessionContext>`. It preserves the session id and keeps
+weak FFI providers valid. An idempotence guard avoids wrapping the dynamic-file
+catalog more than once.
 
 ## Rule 7 — installing a planner mutates the session, and says so
 

@@ -939,6 +939,21 @@ def test_contexts_sharing_a_session_share_the_planner(ctx):
     assert sibling.session_id() == ctx.session_id()
 
 
+def test_enable_url_table_returns_handle_on_shared_session(ctx):
+    sibling = ctx.enable_url_table()
+    session_id = ctx.session_id()
+
+    ctx.sql("SET datafusion.execution.batch_size = 111").collect()
+
+    assert sibling.session_id() == session_id
+    assert ctx.sql("SHOW datafusion.execution.batch_size").collect()[0].column(
+        1
+    ).to_pylist() == ["111"]
+    assert sibling.sql("SHOW datafusion.execution.batch_size").collect()[0].column(
+        1
+    ).to_pylist() == ["111"]
+
+
 class _NamedCodec:
     """Wraps a codec capsule in an object that can name itself.
 

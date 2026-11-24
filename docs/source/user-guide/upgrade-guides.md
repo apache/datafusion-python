@@ -21,6 +21,22 @@
 
 ## DataFusion 56.0.0
 
+### `SessionContext.enable_url_table` now shares the existing session
+
+`enable_url_table()` now returns a handle on the same session rather than a
+separate session with copied state. The original handle sees URL tables enabled
+too, and state changes remain visible through both handles. Code that reassigns
+the result continues to work unchanged:
+
+```python
+ctx = SessionContext()
+ctx = ctx.enable_url_table()
+```
+
+Before this change, the two handles could report the same session id while
+holding divergent state; replacing the original handle could also invalidate
+FFI providers bound to it. Treat both handles as views of one session.
+
 ### `sort` and `order_by` now order `NULLS LAST` by default
 
 Calling `.sort(...)` on a DataFrame or using the `.order_by(...)` function now

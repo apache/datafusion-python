@@ -105,13 +105,8 @@ The same rule applies to a capsule you take off a context inside your own code:
 a codec capsule taken from a throwaway `SessionContext()` names a session that
 is already gone and fails on first use.
 
-:::{warning}
-{py:meth}`~datafusion.SessionContext.enable_url_table` is an exception to the
-one-session-one-allocation rule above: it clones the underlying
-`SessionContext`, so the returned context has an allocation of its own and must
-not outlive the receiver. It also forks the session's state while keeping its
-id, so two handles report one `session_id()` with divergent configuration. That
-is a bug rather than a design, tracked in
-[apache/datafusion-python#1708](https://github.com/apache/datafusion-python/issues/1708);
-do not build on the behaviour.
+:::{note}
+{py:meth}`~datafusion.SessionContext.enable_url_table` returns another handle
+to the same session and enables URL tables for every handle on it. Repeated
+calls are safe and do not wrap the catalog more than once.
 :::
