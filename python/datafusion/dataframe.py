@@ -246,7 +246,8 @@ class ParquetWriterOptions:
                 - ``lz4``: LZ4 compression.
                 - ``lz4_raw``: LZ4_RAW compression.
                 - ``zstd(n)``: Zstandard compression with level n.
-            compression_level: Compression level to set.
+            compression_level: Compression level to set, overriding any level in
+                ``compression``.
             dictionary_enabled: Sets if dictionary encoding is enabled. If ``None``,
                 uses the default parquet writer setting.
             dictionary_page_size_limit: Sets best effort maximum dictionary page size,
@@ -292,12 +293,23 @@ class ParquetWriterOptions:
             column_specific_options: Overrides options for specific columns. If a column
                 is not a part of this dictionary, it will use the parameters provided
                 here.
+
+        Examples:
+            >>> ParquetWriterOptions().compression
+            'zstd(3)'
+            >>> ParquetWriterOptions(compression_level=6).compression
+            'zstd(6)'
+            >>> opts = ParquetWriterOptions(compression="gzip(9)", compression_level=6)
+            >>> opts.compression
+            'gzip(6)'
         """
         self.data_pagesize_limit = data_pagesize_limit
         self.write_batch_size = write_batch_size
         self.writer_version = writer_version
         self.skip_arrow_metadata = skip_arrow_metadata
         if compression_level is not None:
+            if compression is not None:
+                compression = compression.split("(", 1)[0]
             self.compression = f"{compression}({compression_level})"
         else:
             self.compression = compression
