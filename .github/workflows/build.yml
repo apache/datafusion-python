@@ -334,6 +334,8 @@ jobs:
           version: "27.4"
           repo-token: ${{ secrets.GITHUB_TOKEN }}
 
+      # Pin the interpreter: uv otherwise picks the runner's default python3
+      # (3.15 on macos-latest), and some locked dev deps have no 3.15 wheels.
       - name: Install dependencies
         if: matrix.python-tag == 'abi3'
         run: uv sync --python 3.14 --dev --no-install-package datafusion
@@ -417,6 +419,7 @@ jobs:
           version: "27.4"
           repo-token: ${{ secrets.GITHUB_TOKEN }}
 
+      # Pinned for the same reason as the macOS arm64 / Windows job above.
       - name: Install dependencies
         if: matrix.python-tag == 'abi3'
         run: uv sync --python 3.14 --dev --no-install-package datafusion
