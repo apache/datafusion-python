@@ -942,7 +942,7 @@ def test_make_map_mismatched_lengths():
         ),
         pytest.param(
             lambda m: f.map_extract(m, literal("z")),
-            [None],
+            [],
             id="map_extract_missing_key",
         ),
         pytest.param(

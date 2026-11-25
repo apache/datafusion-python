@@ -78,7 +78,7 @@ impl DatasetExec {
     pub fn new(
         py: Python,
         dataset: &Bound<'_, PyAny>,
-        projection: Option<Vec<usize>>,
+        projection: Option<&[usize]>,
         filters: &[Expr],
     ) -> PyDataFusionResult<Self> {
         let columns: Option<PyDataFusionResult<Vec<String>>> = projection.map(|p| {
