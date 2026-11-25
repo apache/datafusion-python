@@ -59,13 +59,13 @@ publish. Each links to the page that explains it.
 
 ## Bundles and planners
 
-- [ ] **You ship a bundle, not loose pieces**, if you have codecs or a planner.
+- [ ] **You ship a bundle, not loose pieces**, if you have codecs, functions,
+      or a planner.
       → {ref}`extension_bundles`
 - [ ] **Your bundle is configuration-only.** Fresh components on every call,
       no cached bound components, no retaining the context passed in, no
-      registering anything on it — a factory that mutates the context is not
-      rolled back if a later factory raises.
-      → {ref}`extension_bundles`
+      registering anything on it — declare what you contribute instead.
+      → {ref}`extension_bundles_transaction`
 - [ ] **Your codecs are objects exposing the getter, not bare capsules.**
       `with_extensions` refuses a capsule, because there would be nothing to
       name the codec by. → {ref}`extension_bundles_codecs_are_objects`

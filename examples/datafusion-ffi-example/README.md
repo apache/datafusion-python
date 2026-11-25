@@ -29,6 +29,10 @@ The example intentionally uses separate `cdylib` crates for these roles:
 
 Separate shared libraries guarantee distinct DataFusion library markers. This catches type-identity mistakes that a planner and provider compiled into one shared library would hide.
 
+## Installing the functions as a bundle
+
+`MyFunctionExtension` implements `__datafusion_session_components__` and declares this crate's scalar, aggregate, and window functions, so a caller installs all three with one `SessionContext.with_extensions(MyFunctionExtension())` rather than wrapping and registering each in turn. It contributes no codecs and no planner, which is the shape a function-only library takes. `python/tests/_test_session_extension.py` covers it, including that a failure after the hook registers nothing.
+
 ## Codec behavior
 
 `MyLogicalExtensionCodec` serializes this example's in-memory table providers, and `MyPhysicalExtensionCodec` serializes provider-owned memory scans and opaque FFI wrappers around them. Both use documented, process-local, one-shot token registries. The registries make ownership and callback routing visible without pretending to be a portable format. They assume trusted in-process payloads and consume each token during decoding. A production provider should instead encode durable metadata from which its provider and plans can be reconstructed.

@@ -26,14 +26,18 @@ functions in pure Python — see
 {doc}`../user-guide/common-operations/udf-and-udfa` — and the two roads meet at
 the same registration methods.
 
-| Hook | Contributes | Wrapped by | Registered with |
-| --- | --- | --- | --- |
-| `__datafusion_scalar_udf__` | scalar function | {py:func}`datafusion.udf` | {py:meth}`~datafusion.SessionContext.register_udf` |
-| `__datafusion_aggregate_udf__` | aggregate function | {py:func}`datafusion.udaf` | {py:meth}`~datafusion.SessionContext.register_udaf` |
-| `__datafusion_window_udf__` | window function | {py:func}`datafusion.udwf` | {py:meth}`~datafusion.SessionContext.register_udwf` |
-| `__datafusion_table_function__` | function returning a table | {py:func}`datafusion.udtf` | {py:meth}`~datafusion.SessionContext.register_udtf` |
+| Hook | Contributes | Wrapped by | Registered with | Declared in a bundle as |
+| --- | --- | --- | --- | --- |
+| `__datafusion_scalar_udf__` | scalar function | {py:func}`datafusion.udf` | {py:meth}`~datafusion.SessionContext.register_udf` | `udfs` |
+| `__datafusion_aggregate_udf__` | aggregate function | {py:func}`datafusion.udaf` | {py:meth}`~datafusion.SessionContext.register_udaf` | `udafs` |
+| `__datafusion_window_udf__` | window function | {py:func}`datafusion.udwf` | {py:meth}`~datafusion.SessionContext.register_udwf` | `udwfs` |
+| `__datafusion_table_function__` | function returning a table | {py:func}`datafusion.udtf` | {py:meth}`~datafusion.SessionContext.register_udtf` | — |
 
-All four are implemented in [`datafusion-ffi-example`], one per file.
+All four are implemented in [`datafusion-ffi-example`], one per file. The last
+column is the {py:class}`~datafusion.SessionExtensionComponents` field a
+{ref}`bundle <extension_bundles>` declares the function in; table functions
+have no such field yet, so they are always registered by the caller with
+{py:meth}`~datafusion.SessionContext.register_udtf`.
 
 ## The three scalar-shaped hooks
 
@@ -66,6 +70,39 @@ from datafusion import udf
 
 ctx.register_udf(udf(my_library.MyScalarUDF()))
 ```
+
+If your library ships more than a function or two, do not make your users write
+that line once per function. Ship a {ref}`bundle <extension_bundles>` declaring
+them, so one call installs the lot:
+
+```python
+ctx = SessionContext().with_extensions(my_library.MyFunctionExtension())
+```
+
+The bundle is yours to write, and like the rest of the protocol it is an object
+exposing a getter — which your cdylib can export directly. That is what
+`MyFunctionExtension` in [`datafusion-ffi-example`] does for this crate's three
+functions; spelled in Python, it is:
+
+```python
+from datafusion import SessionExtensionComponents
+
+
+class MyFunctionExtension:
+    def __datafusion_session_components__(self, ctx):
+        return SessionExtensionComponents(
+            udfs=(IsNullUDF(),),
+            udafs=(MySumUDF(),),
+            udwfs=(MyRankUDF(),),
+        )
+```
+
+Declare either the raw exportable, as here, or an already-wrapped
+{py:class}`~datafusion.user_defined.ScalarUDF`; the registered name comes off
+the function either way. Declare rather than calling `register_udf` inside the
+hook — see {ref}`extension_bundles_transaction` for why — and pick names that
+will not collide with another library's
+({ref}`extension_bundles_collisions`).
 
 ## Table functions
 
