@@ -19,6 +19,10 @@
 
 # DataFusion Python FFI provider example
 
+**What this is:** A testbed that exports table providers, catalogs, functions, and codecs to Python.
+**If you are learning the protocol:** Read the [Extension Guide](https://datafusion.apache.org/python/extension-guide/index.html).
+**To run the demo:** `uv run python examples/datafusion-ffi-example/run_demo.py` (after `uv run maturin develop` in this directory).
+
 This crate is the **provider library** in the three-library query-planning example. It exports table providers, functions, and the logical and physical codecs needed to serialize objects owned by this library. The companion planner is in [`../datafusion-ffi-query-planner-example`](../datafusion-ffi-query-planner-example/).
 
 The example intentionally uses separate `cdylib` crates for these roles:
